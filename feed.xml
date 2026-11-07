@@ -5,8 +5,15 @@
     <link>https://maxomsk.github.io/sdr-news/</link>
     <description>Короткие обзоры свежих работ по радиочастотному обнаружению и классификации БПЛА со ссылками на оригиналы.</description>
     <language>ru</language>
-    <lastBuildDate>Sun, 01 Nov 2026 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 07 Nov 2026 00:00:00 +0000</lastBuildDate>
     <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="https://maxomsk.github.io/sdr-news/feed.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Метод распознавания RF-сигналов БПЛА на основе глубокого обучения</title>
+      <link>https://doi.org/10.4271/2026-99-2214</link>
+      <guid isPermaLink="false">10.4271/2026-99-2214</guid>
+      <pubDate>Sat, 07 Nov 2026 00:00:00 +0000</pubDate>
+      <description>Для распознавания RF-сигналов БПЛА на датасете DroneRFb-DIR предложена модифицированная сеть ResNet18 с SE-вниманием, время-частотной маской и обучением на смешанных уровнях SNR. Подход повысил точность классификации в диапазоне SNR от −10 до 10 дБ на 8% (до 53,01%).</description>
+    </item>
     <item>
       <title>Детектирование и классификация множества беспилотных летательных аппаратов на основе радиочастотных сигналов в условиях открытого набора классов</title>
       <link>https://doi.org/10.1007/s11432-026-5213-1</link>
