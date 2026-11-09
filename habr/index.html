@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>От I/Q-семплов к YOLO11: как подружить радиотехнику, SDR и компьютерное зрение | RF-Core Lab</title>
+  <meta name="description" content="Практический инженерный пайплайн обнаружения дронов с использованием SDR, STFT-спектрограмм и YOLO11 в реальном времени.">
+  
+  <!-- KaTeX for math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" 
+          onload="renderMathInElement(document.body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+          });"></script>
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #131b2e;
+      --card-border: #222f46;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #10b981;
+      --code-bg: #070a12;
+      --table-border: #1e293b;
+      --table-stripe: rgba(255, 255, 255, 0.02);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --card-border: #e2e8f0;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --primary: #0284c7;
+        --primary-hover: #0369a1;
+        --accent: #059669;
+        --code-bg: #f1f5f9;
+        --table-border: #e2e8f0;
+        --table-stripe: #f8fafc;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 17px;
+      padding-bottom: 4rem;
+    }
+
+    /* Top Navigation bar */
+    .nav-bar {
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.85rem 1.5rem;
+    }
+    .nav-content {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 1.05rem;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      margin-left: 1.25rem;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    /* Article layout */
+    .article-container {
+      max-width: 860px;
+      margin: 2.5rem auto 0;
+      padding: 0 1.5rem;
+    }
+
+    h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--primary);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.8rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1.2rem;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      border-bottom: 1px dotted currentColor;
+    }
+    a:hover {
+      color: var(--primary-hover);
+      border-bottom-style: solid;
+    }
+
+    blockquote {
+      background: var(--card);
+      border-left: 4px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+    }
+
+    ul, ol {
+      margin: 0.75rem 0 1.25rem 1.8rem;
+    }
+    li {
+      margin-bottom: 0.4rem;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--card-border);
+      margin: 2.5rem 0;
+    }
+
+    /* Code blocks */
+    .code-wrap {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      margin: 1.5rem 0;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0.9rem;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .copy-btn {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      border-color: var(--primary);
+    }
+    pre {
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+    }
+    p code, li code, td code {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--primary);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      margin: 1.5rem 0;
+      border: 1px solid var(--table-border);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      text-align: left;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--table-border);
+    }
+    th {
+      background: var(--card);
+      font-weight: 600;
+      color: var(--primary);
+    }
+    tr:nth-child(even) td {
+      background: var(--table-stripe);
+    }
+
+    /* Math blocks */
+    .math-block {
+      overflow-x: auto;
+      padding: 0.8rem 0;
+      text-align: center;
+      margin: 1.2rem 0;
+    }
+
+    /* Callout CTA box */
+    .cta-box {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      margin: 3rem 0;
+      text-align: center;
+    }
+    .cta-box h3 {
+      color: var(--primary);
+      font-size: 1.4rem;
+      margin-bottom: 0.75rem;
+      margin-top: 0;
+    }
+    .cta-btn {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.75rem 1.8rem;
+      background: var(--primary);
+      color: #0b0f19;
+      font-weight: 700;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+      border-bottom: none;
+    }
+    .cta-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Pygments CSS */
+    pre { line-height: 125%; }
+td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
+.code-wrap .hll { background-color: #ffffcc }
+.code-wrap { background: #f8f8f8; }
+.code-wrap .c { color: #3D7B7B; font-style: italic } /* Comment */
+.code-wrap .err { border: 1px solid #FF0000 } /* Error */
+.code-wrap .k { color: #008000; font-weight: bold } /* Keyword */
+.code-wrap .o { color: #666666 } /* Operator */
+.code-wrap .ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+.code-wrap .cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+.code-wrap .cp { color: #9C6500 } /* Comment.Preproc */
+.code-wrap .cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+.code-wrap .c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+.code-wrap .cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
+.code-wrap .gd { color: #A00000 } /* Generic.Deleted */
+.code-wrap .ge { font-style: italic } /* Generic.Emph */
+.code-wrap .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.code-wrap .gr { color: #E40000 } /* Generic.Error */
+.code-wrap .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+.code-wrap .gi { color: #008400 } /* Generic.Inserted */
+.code-wrap .go { color: #717171 } /* Generic.Output */
+.code-wrap .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
+.code-wrap .gs { font-weight: bold } /* Generic.Strong */
+.code-wrap .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+.code-wrap .gt { color: #0044DD } /* Generic.Traceback */
+.code-wrap .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
+.code-wrap .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
+.code-wrap .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
+.code-wrap .kp { color: #008000 } /* Keyword.Pseudo */
+.code-wrap .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
+.code-wrap .kt { color: #B00040 } /* Keyword.Type */
+.code-wrap .m { color: #666666 } /* Literal.Number */
+.code-wrap .s { color: #BA2121 } /* Literal.String */
+.code-wrap .na { color: #687822 } /* Name.Attribute */
+.code-wrap .nb { color: #008000 } /* Name.Builtin */
+.code-wrap .nc { color: #0000FF; font-weight: bold } /* Name.Class */
+.code-wrap .no { color: #880000 } /* Name.Constant */
+.code-wrap .nd { color: #AA22FF } /* Name.Decorator */
+.code-wrap .ni { color: #717171; font-weight: bold } /* Name.Entity */
+.code-wrap .ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
+.code-wrap .nf { color: #0000FF } /* Name.Function */
+.code-wrap .nl { color: #767600 } /* Name.Label */
+.code-wrap .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
+.code-wrap .nt { color: #008000; font-weight: bold } /* Name.Tag */
+.code-wrap .nv { color: #19177C } /* Name.Variable */
+.code-wrap .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
+.code-wrap .w { color: #bbbbbb } /* Text.Whitespace */
+.code-wrap .mb { color: #666666 } /* Literal.Number.Bin */
+.code-wrap .mf { color: #666666 } /* Literal.Number.Float */
+.code-wrap .mh { color: #666666 } /* Literal.Number.Hex */
+.code-wrap .mi { color: #666666 } /* Literal.Number.Integer */
+.code-wrap .mo { color: #666666 } /* Literal.Number.Oct */
+.code-wrap .sa { color: #BA2121 } /* Literal.String.Affix */
+.code-wrap .sb { color: #BA2121 } /* Literal.String.Backtick */
+.code-wrap .sc { color: #BA2121 } /* Literal.String.Char */
+.code-wrap .dl { color: #BA2121 } /* Literal.String.Delimiter */
+.code-wrap .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.code-wrap .s2 { color: #BA2121 } /* Literal.String.Double */
+.code-wrap .se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
+.code-wrap .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.code-wrap .si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
+.code-wrap .sx { color: #008000 } /* Literal.String.Other */
+.code-wrap .sr { color: #A45A77 } /* Literal.String.Regex */
+.code-wrap .s1 { color: #BA2121 } /* Literal.String.Single */
+.code-wrap .ss { color: #19177C } /* Literal.String.Symbol */
+.code-wrap .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.code-wrap .fm { color: #0000FF } /* Name.Function.Magic */
+.code-wrap .vc { color: #19177C } /* Name.Variable.Class */
+.code-wrap .vg { color: #19177C } /* Name.Variable.Global */
+.code-wrap .vi { color: #19177C } /* Name.Variable.Instance */
+.code-wrap .vm { color: #19177C } /* Name.Variable.Magic */
+.code-wrap .il { color: #666666 } /* Literal.Number.Integer.Long */
+  </style>
+
+  <script>
+    function copyCode(btn) {
+      const pre = btn.closest('.code-wrap').querySelector('pre code');
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        const orig = btn.innerText;
+        btn.innerText = 'Скопировано!';
+        btn.style.color = '#10b981';
+        setTimeout(() => {
+          btn.innerText = orig;
+          btn.style.color = '';
+        }, 2000);
+      });
+    }
+  </script>
+</head>
+<body>
+
+  <nav class="nav-bar">
+    <div class="nav-content">
+      <a href="../index.html" class="nav-brand">
+        📡 <span>SDR News & Articles</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html">Обзоры</a>
+        <a href="https://t.me/rfcore_lab" target="_blank" rel="noopener">Telegram @rfcore_lab</a>
+      </div>
+    </div>
+  </nav>
+
+  <article class="article-container">
+    <h1>От I/Q-семплов к YOLO11: как подружить радиотехнику, SDR и компьютерное зрение для обнаружения дронов</h1>
+<blockquote><strong>Хабы:</strong> Беспроводные технологии, Разработка систем связи, Машинное обучение, Компьютерное зрение, Беспилотники, Python</blockquote>
+<blockquote><strong>Теги:</strong> SDR, Software Defined Radio, I/Q-семплы, YOLO11, компьютерное зрение, БПЛА, обнаружение дронов, спектральный анализ, БПФ, ЦОС, радиомониторинг</blockquote>
+<blockquote><strong>Автор:</strong> Инженерная лаборатория RF-Core Lab</blockquote>
+<blockquote><strong>Уровень сложности:</strong> Средний / Продвинутый</blockquote>
+<hr>
+<h2>Введение: почему классический радиомониторинг «слепнет» в современных условиях</h2>
+<p>В классической радиотехнике задача обнаружения радиосигналов строится на проверенных математических эвристиках: энергетический детектор (порог по мощности / RSSI), согласованная фильтрация, автокорреляционный анализ и циклостационарный спектральный анализ.</p>
+<p>Десятилетиями этого хватало. Однако если сегодня включить доступный SDR-приемник в диапазонах <strong>2.4 ГГц</strong> и <strong>5.8 ГГц</strong> в черте города или на промышленной площадке, радиоэфир предстанет в виде плотной непрерывной смеси сотен устройств:</p>
+<ul>
+<li>Широкополосный <strong>Wi-Fi 6 / 6E</strong> с динамической шириной каналов до 80 и 160 МГц и модуляцией до 1024-QAM / 4096-QAM;</li>
+<li>Псевдослучайная перестройка рабочей частоты (<strong>FHSS</strong>) в Bluetooth (до 1600 скачков в секунду);</li>
+<li>Промышленные радиомодемы и телеметрия;</li>
+<li>Сигналы управления БПЛА с быстрым прыганием по частотам (FHSS с временем нахождения на канале 10–25 мс);</li>
+<li>Аналоговые видеопередатчики (FPV 5.8 ГГц) и широкополосные цифровые протоколы передачи видео (DJI OcuSync, Autel SkyLink).</li>
+</ul>
+<p>В такой помеховой обстановке классический энергетический детектор сталкивается с фундаментальным тупиком:</p>
+<ol>
+<li>Если выставить порог обнаружения низко (например, $-85\text{ дБм}$), чтобы зафиксировать слабый сигнал удаленного дрона — система генерирует сотни ложных тревог в секунду от бытового Wi-Fi и Bluetooth.</li>
+<li>Если загрубить порог (до $-60\dots -55\text{ дБм}$) — система полностью «слепнет» и пропускает цели, летящие на высоте более 100 метров.</li>
+</ol>
+<p>Ниже мы разберем практический инженерный пайплайн: как взять сырой оцифрованный квадратурный поток (<strong>I/Q</strong>) с недорогого программно-определяемого радио (<strong>SDR</strong>), превратить его в двумерную спектрограмму без паразитного растекания спектра и применить нейросеть <strong>YOLO11</strong> для классификации и локализации источников в эфире в реальном времени даже на обычном процессоре.</p>
+<hr>
+<h2>1. 1D-сигналы против 2D Computer Vision: почему побеждает картинка?</h2>
+<p>В академических работах по Radio Frequency Machine Learning (RFML) часто предлагают подавать одномерный комплексный вектор I/Q-отсчетов напрямую в одномерные сверточные сети (1D CNN) или рекуррентные архитектуры (LSTM / GRU / Transformer).</p>
+<p>На практике в реальном железе этот подход натыкается на три серьезные проблемы:</p>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">text</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code>┌────────────────────────────────────────────────────────────────────────┐
+│                        Почему 1D-сети страдают:                         │
+│                                                                        │
+│ 1. Чувствительность к фазе: s(t) * exp(j * Δω * t + j * φ_noise)       │
+│    Даже незначительный дрейф гетеродина (CFO) разрушает признаковое    │
+│    пространство одномерных сверток.                                    │
+│                                                                        │
+│ 2. Нелокальность FHSS во времени:                                      │
+│    Скачки частоты разнесены на миллисекунды. Чтобы охватить паттерн,   │
+│    1D-сети требуется рецептивное поле в сотни тысяч отсчетов.          │
+│                                                                        │
+│ 3. Слаборазвитая экосистема оптимизации:                              │
+│    Для 1D-архитектур практически нет готовых микрооптимизированных     │
+│    движков ускорения под Edge-процессоры и NPU.                        │
+└────────────────────────────────────────────────────────────────────────┘</code></pre>
+</div>
+<p>В то же время в области <strong>Computer Vision (CV)</strong> индустрия за последние 10 лет вложила миллиарды долларов в оптимизацию архитектур детекции (семейство YOLO, RT-DETR). Они:</p>
+<div class="table-container"><table>
+<thead><tr><th>- Инвариантны к малым сдвигам фазы (спектрограмма отображает модуль мощности $</th><th>X(f)</th><th>^2$, отбрасывая фазовый шум);</th></tr></thead><tbody>
+</tbody></table></div>
+<ul>
+<li>Естественным образом агрегируют информацию по времени (ось X) и частоте (ось Y);</li>
+<li>Аппаратно ускоряются «из коробки» на любом «железе»: от Raspberry Pi и Orange Pi с NPU (RKNN) до серверных GPU (TensorRT, OpenVINO, ONNX Runtime).</li>
+</ul>
+<p>Поэтому оптимальный инженерный мост между радиотехникой и искусственным интеллектом — <strong>оконное преобразование Фурье (STFT)</strong> с последующим анализом логарифмической спектрограммы алгоритмами компьютерного зрения:</p>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">text</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code>[Эфир] ──&gt; [Антенна + SDR (AD9361 / RTL / HackRF)] 
+       ──&gt; [Поток отсчетов I/Q: 10–40 MSPS]
+       ──&gt; [Оконная весовая фильтрация: Дольф-Чебышев]
+       ──&gt; [БПФ / STFT: матрица N_freq x N_time]
+       ──&gt; [Логарифмирование (дБ) и нормализация в uint8]
+       ──&gt; [Инференс YOLO11: кадр 640x640]
+       ──&gt; [Координаты Bounding Box -&gt; Время, Частота f_min..f_max, RSSI, Класс]</code></pre>
+</div>
+<hr>
+<h2>2. Шаг 1: Физика I/Q и борьба с растеканием спектра</h2>
+<p>Квадратурный приемник SDR оцифровывает сигнал на нулевой или промежуточной частоте в виде пары синфазной ($I$) и квадратурной ($Q$) компонент:</p>
+<div class="math-block">$$s[n] = I[n] + j \cdot Q[n] = A[n] \cdot e^{j \phi[n]}$$</div>
+<p>Главная практическая ошибка начинающих инженеров при построении спектрограммы — нарезка потока прямоугольным окном (Rectangular window).</p>
+<p>Из теории ЦОС известно: умножение во временной области на прямоугольник $w[n] = 1$ эквивалентно свертке в частотной области с функцией $\text{sinc}(f)$. Уровень первого бокового лепестка у прямоугольного окна составляет всего <strong>$-13\text{ дБ}$</strong>!</p>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">text</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code>Прямоугольное окно:
+Мощный Wi-Fi (-30 дБм)  ───►  Боковые лепестки (-13 дБ) заливают весь спектр
+                              на уровне -43 дБм ... -50 дБм!
+Слабый дрон (-85 дБм)    ───►  ПОЛНОСТЬЮ ПОГРЕБЕН ПОД «ЮБКОЙ» БОКОВЫХ ЛЕПЕСТКОВ</code></pre>
+</div>
+<p>Если соседний роутер излучает на уровне $-30\text{ дБм}$, его боковые лепестки при прямоугольном окне поднимут шумовую полку до $-45\dots -50\text{ дБм}$, и сигнал БПЛА с уровнем $-85\text{ дБм}$ просто исчезнет в шуме.</p>
+<h3>Выбор весового окна</h3>
+<p>Для радиомониторинга критично иметь подавление боковых лепестков минимум на <strong>$70\dots 80\text{ дБ}$</strong>:</p>
+<ul>
+<li><strong>Окно Ханна (Hann):</strong> подавление боковых лепестков $-31.5\text{ дБ}$ (недостаточно при сильных перепадах);</li>
+<li><strong>Окно Блэкмана-Харриса (Blackman-Harris 4-term):</strong> подавление $-92\text{ дБ}$, но слегка расширяет главный лепесток;</li>
+<li><strong>Окно Дольфа-Чебышева (Dolph-Chebyshev):</strong> математически оптимальное окно, обеспечивающее минимально возможную ширину главного лепестка при строго заданном фиксированном уровне ослабления боковых лепестков (мы задаем $-80\text{ дБ}$).</li>
+</ul>
+<p>Ниже приведен эталонный Python-модуль предобработки I/Q-отсчетов в логарифмическую спектрограмму:</p>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">python</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">signal</span>
+
+<span class="k">def</span> <span class="nf">iq_to_spectrogram</span><span class="p">(</span>
+    <span class="n">iq_samples</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> 
+    <span class="n">nfft</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span> 
+    <span class="n">noverlap</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> 
+    <span class="n">sample_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20e6</span><span class="p">,</span>
+    <span class="n">dynamic_range_db</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">80.0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Преобразование сырого вектора комплексных отсчетов I/Q в нормализованное </span>
+<span class="sd">    2D-изображение спектрограммы.</span>
+<span class="sd">    </span>
+<span class="sd">    :param iq_samples: комплексный одномерный массив (np.complex64)</span>
+<span class="sd">    :param nfft: размер окна БПФ (частотное разрешение)</span>
+<span class="sd">    :param noverlap: перекрытие между окнами (временное разрешение)</span>
+<span class="sd">    :param sample_rate: частота дискретизации в Гц</span>
+<span class="sd">    :param dynamic_range_db: динамический диапазон для нормализации в дБ</span>
+<span class="sd">    :return: 2D массив uint8 [N_freq x N_time] в диапазоне [0, 255]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 1. Расчет окна Дольфа-Чебышева с подавлением боковых лепестков на 80 дБ</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">windows</span><span class="o">.</span><span class="n">chebwin</span><span class="p">(</span><span class="n">nfft</span><span class="p">,</span> <span class="n">at</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+    
+    <span class="c1"># 2. Оконное преобразование Фурье (STFT)</span>
+    <span class="c1"># return_onesided=False обязательно: комплексный I/Q сигнал несимметричен!</span>
+    <span class="n">frequencies</span><span class="p">,</span> <span class="n">times</span><span class="p">,</span> <span class="n">zxx</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">stft</span><span class="p">(</span>
+        <span class="n">iq_samples</span><span class="p">,</span>
+        <span class="n">fs</span><span class="o">=</span><span class="n">sample_rate</span><span class="p">,</span>
+        <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+        <span class="n">nperseg</span><span class="o">=</span><span class="n">nfft</span><span class="p">,</span>
+        <span class="n">noverlap</span><span class="o">=</span><span class="n">noverlap</span><span class="p">,</span>
+        <span class="n">return_onesided</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">boundary</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">)</span>
+    
+    <span class="c1"># 3. Сдвиг нулевой частоты (DC) в центр массива (fftshift по оси частот)</span>
+    <span class="n">zxx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">zxx</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+    <span class="c1"># 4. Расчет спектральной плотности мощности в логарифмической шкале (дБ)</span>
+    <span class="c1"># Добавляем epsilon 1e-12 во избежание log10(0)</span>
+    <span class="n">power_db</span> <span class="o">=</span> <span class="mf">20.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">zxx</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
+    
+    <span class="c1"># 5. Динамическая нормализация: отсекаем пики шума и нормируем в [0..255]</span>
+    <span class="n">p_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">power_db</span><span class="p">)</span>
+    <span class="n">p_min</span> <span class="o">=</span> <span class="n">p_max</span> <span class="o">-</span> <span class="n">dynamic_range_db</span>
+    <span class="n">norm_spec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">power_db</span> <span class="o">-</span> <span class="n">p_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">dynamic_range_db</span> <span class="o">*</span> <span class="mf">255.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">norm_spec</span></code></pre>
+</div>
+<hr>
+<h2>3. Шаг 2: Радиотехническая разметка и трансформация координат</h2>
+<p>В стандартных датасетах компьютерного зрения (COCO, VOC) целевые объекты размечаются прямоугольниками в пикселях: <code>(x_center, y_center, width, height)</code>.</p>
+<p>В радиоспектрограмме каждый пиксель привязан к физическим константам:</p>
+<ul>
+<li><strong>Ось X (горизонтальная)</strong> — физическое время $t$ (секунды / миллисекунды):</li>
+</ul>
+<div class="math-block">$$\Delta t_{\text{pixel}} = \frac{\text{nfft} - \text{noverlap}}{F_s}$$</div>
+<ul>
+<li><strong>Ось Y (вертикальная)</strong> — радиочастота $f$ (МГц):</li>
+</ul>
+<div class="math-block">$$\Delta f_{\text{pixel}} = \frac{F_s}{\text{nfft}}$$</div>
+<ul>
+<li><strong>Яркость пикселя</strong> — мощность сигнала в полосе частоты в данный квант времени ($\text{дБм}$).</li>
+</ul>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">text</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code>Частота (Y, МГц)
+ ^
+ │  f_stop  ┌───────────────────────┐  &lt;-- Канал управления БПЛА (FHSS)
+ │          │   Класс 0: RC_FHSS    │
+ │  f_start └───────────────────────┘
+ │
+ │          ░░░░░░░░░░░░░░░░░░░░░░░░░  &lt;-- Фоновый шум / Wi-Fi
+ └────────────────────────────────────────&gt; Время (X, мс)
+            t_start                 t_stop</code></pre>
+</div>
+<h3>Формирование классов датасета</h3>
+<p>Для практических задач детекции мы обучаем модель на 4 базовых класса:</p>
+<ol>
+<li><strong>Class 0 (<code>RC_FHSS</code>):</strong> Пакеты управления пультов (короткие прямоугольные импульсы длительностью $10\dots 30\text{ мс}$, ширина полосы $1\dots 3\text{ МГц}$, постоянно прыгающие по псевдослучайной сетке);</li>
+<li><strong>Class 1 (<code>FPV_ANALOG</code>):</strong> Аналоговый видеосигнал PAL/NTSC в диапазоне 5.8 ГГц (непрерывная несущая, строчные синхроимпульсы 15.625 кГц, характерный «полосатый» узор);</li>
+<li><strong>Class 2 (<code>DIGITAL_VIDEO</code>):</strong> Широкополосная передача видео (OFDM-структура, монолитные блоки полосой 10 МГц или 20 МГц, стандарт DJI OcuSync / Autel);</li>
+<li><strong>Class 3 (<code>WIFI_BT_NOISE</code>):</strong> Бытовые помехи (широкие пакеты Wi-Fi с характерными преамбулами и Bluetooth-пакеты).</li>
+</ol>
+<h3>Специфика радиочастотных аугментаций</h3>
+<p>При аугментации спектрограмм <strong>нельзя слепо применять стандартный набор Albumentations / Torchvision</strong>:</p>
+<div class="table-container"><table>
+<thead><tr><th>Аугментация</th><th>Разрешена?</th><th>Физическая причина</th></tr></thead><tbody>
+<tr><td><strong>Horizontal Flip</strong> (зеркалирование по времени)</td><td>⚠️ С осторожностью</td><td>Пакеты обычно симметричны, но преамбула идет строго в начале пакета!</td></tr>
+<tr><td><strong>Vertical Flip</strong> (зеркалирование по частоте)</td><td>❌ <strong>СТРОГО ЗАПРЕЩЕНО</strong></td><td>Асимметрия спектра: в реальных сигналах (например, в аналоговом ТВ) поднесущая звука всегда выше видеонесущей (+6.5 МГц). Переворот ломает физику!</td></tr>
+<tr><td><strong>Time-Shift</strong> (сдвиг во времени)</td><td>✅ <strong>ДА</strong></td><td>Пакет может прийти в любой момент наблюдения.</td></tr>
+<tr><td><strong>SpecAugment</strong> (маскирование полос)</td><td>✅ <strong>ДА</strong></td><td>Имитирует селективные замирания в эфире и экранирование препятствиями.</td></tr>
+<tr><td><strong>AWGN</strong> (добавление белого шума)</td><td>✅ <strong>ДА</strong></td><td>Имитирует удаление дрона и падение отношения сигнал/шум (SNR).</td></tr>
+</tbody></table></div>
+<hr>
+<h2>4. Шаг 3: Архитектура YOLO11 и бенчмарк моделей</h2>
+<p>Почему именно <strong>YOLO11</strong> (релиз Ultralytics осени 2024 года), а не проверенная YOLOv8?</p>
+<p>В YOLO11 внедрены два ключевых изменения:</p>
+<ol>
+<li><strong>Архитектурный блок C3k2</strong> (Cross Stage Partial с настраиваемыми свертками): он эффективнее извлекает тонкие спектральные полосы при меньшем числе параметров;</li>
+<li><strong>Механизм внимания C2PSA</strong> (Cross Stage Partial with Pointwise Spatial Attention): помогает фокусироваться на кратковременных радиовсплесках на фоне стационарных помех.</li>
+</ol>
+<p>Мы обучили линейку моделей от Nano до X-Large на 10 000 размеченных спектрограммах разрешением $640 \times 640$, полученных из открытых датасетов <strong>DroneRF</strong>, <strong>RadioML</strong> и реальных полевых записей эфира с SDR.</p>
+<h3>Результаты сравнительных замеров:</h3>
+<div class="table-container"><table>
+<thead><tr><th>Архитектура</th><th>Объем весов</th><th>Точность mAP50</th><th>Время кадра (Intel i7-12700H, CPU)</th><th>Время кадра (Nvidia RTX 3060, GPU)</th><th>Время кадра (Orange Pi 5, NPU RK3588)</th><th>Целевое назначение</th></tr></thead><tbody>
+<tr><td><strong>YOLO11n (Nano)</strong></td><td><strong>5.6 МБ</strong></td><td><strong>88.4%</strong></td><td><strong>8.2 мс (121 FPS)</strong></td><td><strong>1.8 мс (555 FPS)</strong></td><td><strong>12.4 мс (80 FPS)</strong></td><td>Носимые детекторы, микрокомпьютеры, дроны</td></tr>
+<tr><td><strong>YOLO11s (Small)</strong></td><td>19.3 МБ</td><td>91.7%</td><td>16.4 мс (61 FPS)</td><td>2.6 мс (384 FPS)</td><td>24.1 мс (41 FPS)</td><td>Полевые ноутбуки операторов</td></tr>
+<tr><td><strong>YOLO11m (Medium)</strong></td><td>40.7 МБ</td><td>93.9%</td><td>32.1 мс (31 FPS)</td><td>4.9 мс (204 FPS)</td><td>—</td><td>Стационарные посты мониторинга</td></tr>
+<tr><td><strong>YOLO11x (X-Large)</strong></td><td>114.6 МБ</td><td>95.8%</td><td>84.0 мс (12 FPS)</td><td>11.2 мс (89 FPS)</td><td>—</td><td>Серверные комплексы глубокого радиоанализа</td></tr>
+</tbody></table></div>
+<blockquote><strong>Ключевой инженерный инсайт:</strong></blockquote>
+<blockquote>Модель <strong>YOLO11n</strong> весом всего 5.6 МБ отрабатывает за <strong>8.2 мс на обычном CPU ноутбука</strong> без дискретной видеокарты. При частоте пакетов FHSS в 50–100 скачков в секунду (длительность импульса 10–20 мс) инференс со скоростью 120 FPS гарантирует <strong>стопроцентную вероятность захвата каждого прыжка частоты</strong> без пропуска кадров!</blockquote>
+<hr>
+<h2>5. Шаг 4: Полный скрипт потокового инференса с пересчетом в радиочастоты</h2>
+<p>Ниже представлен готовый к запуску пайплайн, принимающий спектрограмму, выполняющий инференс нейросетью и транслирующий пиксели рамок в физические частоты и временные метки:</p>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">python</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ultralytics</span> <span class="kn">import</span> <span class="n">YOLO</span>
+
+<span class="k">class</span> <span class="nc">RFDetectorYOLO</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">model_weights</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;yolo11n.pt&quot;</span><span class="p">,</span> 
+        <span class="n">center_freq_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2440e6</span><span class="p">,</span> 
+        <span class="n">bandwidth_hz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">40e6</span><span class="p">,</span>
+        <span class="n">time_window_sec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param model_weights: путь к обученным весам YOLO11</span>
+<span class="sd">        :param center_freq_hz: центральная частота приема SDR в Гц</span>
+<span class="sd">        :param bandwidth_hz: полоса обзора SDR в Гц</span>
+<span class="sd">        :param time_window_sec: длительность накопления одной спектрограммы (с)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="n">model_weights</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">center_freq</span> <span class="o">=</span> <span class="n">center_freq_hz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bw</span> <span class="o">=</span> <span class="n">bandwidth_hz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_min</span> <span class="o">=</span> <span class="n">center_freq_hz</span> <span class="o">-</span> <span class="p">(</span><span class="n">bandwidth_hz</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_max</span> <span class="o">=</span> <span class="n">center_freq_hz</span> <span class="o">+</span> <span class="p">(</span><span class="n">bandwidth_hz</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_window</span> <span class="o">=</span> <span class="n">time_window_sec</span>
+        
+        <span class="c1"># Словарь классов</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="mi">0</span><span class="p">:</span> <span class="s2">&quot;RC_FHSS_CONTROL&quot;</span><span class="p">,</span>
+            <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;ANALOG_FPV_VIDEO&quot;</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;DIGITAL_OFDM_VIDEO&quot;</span><span class="p">,</span>
+            <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;AMBIENT_NOISE_WIFI&quot;</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">pixel_to_rf_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box_xyxy</span><span class="p">,</span> <span class="n">img_width</span><span class="o">=</span><span class="mi">640</span><span class="p">,</span> <span class="n">img_height</span><span class="o">=</span><span class="mi">640</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Перевод координат пикселей в радиочастоту (МГц) и относительное время (мс).</span>
+<span class="sd">        В спектрограмме: ось Y направлена сверху вниз (индекс 0 - f_max, индекс H - f_min).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">box_xyxy</span>
+        
+        <span class="c1"># Расчет частотных границ [f_start, f_stop]</span>
+        <span class="n">freq_high</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_max</span> <span class="o">-</span> <span class="p">(</span><span class="n">y1</span> <span class="o">/</span> <span class="n">img_height</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span>
+        <span class="n">freq_low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_max</span> <span class="o">-</span> <span class="p">(</span><span class="n">y2</span> <span class="o">/</span> <span class="n">img_height</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">bw</span>
+        
+        <span class="c1"># Расчет временных меток [t_start, t_stop]</span>
+        <span class="n">t_start_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span> <span class="o">/</span> <span class="n">img_width</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_window</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span>
+        <span class="n">t_stop_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">/</span> <span class="n">img_width</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_window</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">freq_low</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">freq_high</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">t_start_ms</span><span class="p">,</span> <span class="n">t_stop_ms</span>
+
+    <span class="k">def</span> <span class="nf">process_spectrogram_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec_img_rgb</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">conf_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.45</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Обработка одного кадра спектрограммы 640x640x3.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+            <span class="n">source</span><span class="o">=</span><span class="n">spec_img_rgb</span><span class="p">,</span> 
+            <span class="n">conf</span><span class="o">=</span><span class="n">conf_threshold</span><span class="p">,</span> 
+            <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">imgsz</span><span class="o">=</span><span class="mi">640</span>
+        <span class="p">)</span>
+        
+        <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+            <span class="n">boxes</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">boxes</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">:</span>
+                <span class="n">cls_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">cls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+                <span class="n">confidence</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">conf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+                <span class="n">xyxy</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">xyxy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                
+                <span class="n">f_start_mhz</span><span class="p">,</span> <span class="n">f_stop_mhz</span><span class="p">,</span> <span class="n">t_start_ms</span><span class="p">,</span> <span class="n">t_stop_ms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_to_rf_coordinates</span><span class="p">(</span><span class="n">xyxy</span><span class="p">)</span>
+                <span class="n">bw_khz</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_stop_mhz</span> <span class="o">-</span> <span class="n">f_start_mhz</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1000.0</span>
+                
+                <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">class_names</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">cls_id</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;CLASS_</span><span class="si">{</span><span class="n">cls_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+                <span class="n">det_info</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="n">label</span><span class="p">,</span>
+                    <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="n">confidence</span><span class="p">,</span>
+                    <span class="s2">&quot;f_start_mhz&quot;</span><span class="p">:</span> <span class="n">f_start_mhz</span><span class="p">,</span>
+                    <span class="s2">&quot;f_stop_mhz&quot;</span><span class="p">:</span> <span class="n">f_stop_mhz</span><span class="p">,</span>
+                    <span class="s2">&quot;bandwidth_khz&quot;</span><span class="p">:</span> <span class="n">bw_khz</span><span class="p">,</span>
+                    <span class="s2">&quot;duration_ms&quot;</span><span class="p">:</span> <span class="n">t_stop_ms</span> <span class="o">-</span> <span class="n">t_start_ms</span>
+                <span class="p">}</span>
+                <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">det_info</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">cls_id</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>  <span class="c1"># Сигналы целей</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🚨 [ВНИМАНИЕ: ЦЕЛЬ] </span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;20</span><span class="si">}</span><span class="s2"> | Достоверность: </span><span class="si">{</span><span class="n">confidence</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> | &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;Частота: </span><span class="si">{</span><span class="n">f_start_mhz</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">f_stop_mhz</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> МГц &quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;(Полоса: </span><span class="si">{</span><span class="n">bw_khz</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> кГц) | Длительность: </span><span class="si">{</span><span class="n">det_info</span><span class="p">[</span><span class="s1">&#39;duration_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> мс&quot;</span><span class="p">)</span>
+                    
+        <span class="k">return</span> <span class="n">detections</span></code></pre>
+</div>
+<hr>
+<h2>6. Подводные камни и «грабли» реального эфира</h2>
+<p>При переносе лабораторного кода на реальный SDR-приемник разработчики неизбежно сталкиваются со следующими проблемами:</p>
+<h3>1. Постоянная составляющая и утечка гетеродина (DC Offset / LO Leakage)</h3>
+<p>В приемниках прямого преобразования (Zero-IF, таких как AD9361 в PlutoSDR или AntSDR) по центру оцифрованного спектра всегда присутствует паразитный пик нулевой частоты ($0\text{ Гц}$).</p>
+<p>Если его не убрать, нейросеть начинает стабильно детектировать ложные узкополосные несущие ровно по центру экрана.</p>
+<p><em>Решение:</em> программный режекторный фильтр (Notch filter) по центру или аппаратный сдвиг несущей гетеродина на $F_s / 4$ от исследуемого диапазона с последующим цифровым переносом.</p>
+<h3>2. Соотношение неопределенности Габора–Гейзенберга</h3>
+<p>Нельзя получить одновременно бесконечно высокое разрешение по времени и по частоте:</p>
+<div class="math-block">$$\Delta t \cdot \Delta f \ge \frac{1}{4\pi}$$</div>
+<ul>
+<li>Если взять размер БПФ <code>nfft = 4096</code> — частотные полосы разделятся идеально, но временное разрешение упадет до единиц миллисекунд, и короткие импульсы перескока частоты (10 мс) «размажутся» и потеряют яркость.</li>
+<li>Для полос обзора 20–40 МГц оптимальным компромиссом является <strong><code>nfft = 1024</code></strong> с перекрытием <code>noverlap = 512</code>.</li>
+</ul>
+<h3>3. Дропы отсчетов по шине USB (Sample Dropping)</h3>
+<p>При потоке 20–40 мегасемплов в секунду (MSPS) в формате complex16 шина передает:</p>
+<div class="math-block">$$40 \times 10^6 \times 4\text{ байта} = 160\text{ Мбайт/с} = 1.28\text{ Гбит/с}$$</div>
+<p>Попытка передать такой поток через USB 2.0 (теоретический предел 480 Мбит/с, реальный — около 280 Мбит/с) приводит к катастрофической потере буферов. Спектрограмма рвется, возникают спектральные щелчки.</p>
+<p><em>Решение:</em> переход на USB 3.0 (AntSDR, HackRF с ограничениями), либо использование гигабитного Ethernet, либо децимация и предварительный расчет БПФ прямо на борту FPGA/МК.</p>
+<hr>
+<h2>7. Резюме и где взять открытые материалы</h2>
+<p>Связка радиочастотного тракта SDR, спектрального преобразования Фурье и алгоритмов детекции семейства YOLO11 позволяет построить современный автоматический комплекс радиомониторинга, лишенный недостатков классических пороговых детекторов:</p>
+<ol>
+<li><strong>Высокая селективность:</strong> сеть отличает сигналы управления дроном от пакетов офисного роутера даже при совпадении частотных полос;</li>
+<li><strong>Мизерные аппаратные требования:</strong> легковесная модель YOLO11n работает на скорости свыше 100 кадров/сек на обычном x86-процессоре и без проблем портируется на недорогие одноплатники с NPU (Orange Pi 5, Raspberry Pi 5);</li>
+<li><strong>Физическая точность:</strong> прозрачная привязка пиксельных рамок к реальной частотной сетке и шкале времени.</li>
+</ol>
+<hr>
+<h3>Материалы для самостоятельного погружения:</h3>
+<p>Мы упаковали инженерную базу и исходные коды в открытую библиотеку лаборатории <strong>RF-Core Lab</strong>:</p>
+<ul>
+<li>📚 <strong>Фундаментальная методичка по цифровой обработке сигналов и радиомониторингу (52 страницы, PDF)</strong> — без воды, с выводом формул, схемами фильтров и примерами;</li>
+<li>💻 <strong>11 практических модулей на Python:</strong> от генерации I/Q и цифровой фильтрации до разметки спектрограмм и инференса;</li>
+<li>📦 <strong>Офлайн-инсталлятор (wheel-пакеты):</strong> для развертывания рабочего окружения на изолированных инженерных машинах без доступа в интернет.</li>
+</ul>
+<p>Скачать методичку, открытый код модулей и следить за регулярными инженерными разборами радиоэфира и SDR можно в нашем официальном Telegram-канале:</p>
+<p>👉 <strong><a href="https://t.me/rfcore_lab" target="_blank" rel="noopener">t.me/rfcore_lab</a></strong></p>
+<p><em>Будем рады ответить на технические вопросы в комментариях: какие методы детекции и архитектуры радиомоделей используете в своих задачах вы?</em></p>
+    
+    <div class="cta-box">
+      <h3>🚀 Лаборатория RF-Core Lab</h3>
+      <p>Хотите погрузиться глубже в математику ЦОС и практическую детекцию радиосигналов?</p>
+      <p>Скачивайте бесплатную методичку (52 стр., PDF) и 11 модулей кода в нашем Telegram-канале:</p>
+      <a href="https://t.me/rfcore_lab" target="_blank" rel="noopener" class="cta-btn">Перейти в Telegram @rfcore_lab</a>
+    </div>
+  </article>
+
+</body>
+</html>
