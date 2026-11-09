@@ -6,47 +6,225 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Сравнительная оценка моделей и признаков для акустического обнаружения БПЛА в реальных условиях</title>
 <style>
- body { font: 16px/1.55 system-ui, "Segoe UI", Roboto, sans-serif; margin: 0 auto;
-        max-width: 52rem; padding: 1.5rem; color: #1b1f23; background: #fff; }
- nav { font-size: .9rem; margin-bottom: 1.2rem; }
- h1 { font-size: 1.5rem; line-height: 1.3; margin: 1rem 0 .6rem; }
- h2 { font-size: 1.15rem; margin: 1.6rem 0 .5rem; color: #0969da; }
- ul { padding-left: 1.2rem; }
- li { margin-bottom: .35rem; }
- a { color: #0969da; }
- @media (prefers-color-scheme: dark) {
-   body { color: #e6edf3; background: #0d1117; }
-   a, h2 { color: #58a6ff; }
- }
+  :root {
+    --bg: #0b0f19;
+    --card: #151d2f;
+    --border: #222f46;
+    --text: #f1f5f9;
+    --sub: #94a3b8;
+    --primary: #38bdf8;
+    --primary-hover: #0284c7;
+    --danger: #f87171;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --sub: #64748b;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --danger: #dc2626;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .login-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2.25rem 2rem;
+    max-width: 24rem;
+    width: 100%;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+  .icon {
+    font-size: 2.25rem;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+  }
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    line-height: 1.35;
+  }
+  p {
+    font-size: 0.875rem;
+    color: var(--sub);
+    margin-bottom: 1.4rem;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="password"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  }
+  button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+  }
+  button:hover {
+    background: var(--primary-hover);
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .error {
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+    min-height: 1.2rem;
+  }
+  .loading {
+    display: none;
+    color: var(--sub);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+  }
 </style>
 </head>
 <body>
-<nav><a href="../index.html">← все обзоры</a></nav>
-<h1>Сравнительная оценка моделей и признаков для акустического обнаружения БПЛА в реальных условиях</h1>
-<p>Оригинальное название: Comparative Evaluation of Models and Features for Acoustic Drone Detection in Real-World Conditions</p>
-<p>Источник: University of Salford Institutional Repository (University of Salford), 2026</p>
-<p>DOI: 10.17866/rd.salford.34789221</p>
-<p><i>Перевод по аннотации (полный текст недоступен): метод, результаты и выводы — по данным аннотации/страницы публикации.</i></p>
-<h2>АННОТАЦИЯ</h2>
-<p>Акустические сенсоры представляют собой перспективный подход к обнаружению беспилотных летательных аппаратов (БПЛА, UAV), дополняя визуальные и радиочастотные методы и оставаясь эффективными в сценариях, где другие сенсорные технологии ограничены. Однако надёжное акустическое обнаружение дронов в реальных условиях остаётся сложной задачей из-за изменяющегося фонового шума, условий записи, дистанции до цели и режимов работы БПЛА. В работе исследуется одноканальное акустическое обнаружение БПЛА, сформулированное как задача бинарной классификации, с использованием большого набора вручную размеченных полевых записей, собранных в реалистичных условиях на открытом воздухе. Исследование сравнивает несколько подходов к обнаружению: от классификаторов машинного обучения (ML) с вручную конструированными акустическими признаками до архитектур глубокого обучения (DL), работающих на входных данных в виде логарифмированных мел-спектрограмм (log-Mel spectrogram). Для моделей глубокого обучения оцениваются различные стратегии обучения: обучение с нуля, использование предобученных замороженных извлекателей признаков (frozen feature extractors) и дообучение (fine-tuning) сетей. Помимо качества покадровой классификации, модели оцениваются с точки зрения вычислительной сложности и времени инференса на процессоре (CPU). Результаты показывают, что модели машинного обучения на основе сконструированных признаков остаются весьма конкурентоспособными, обеспечивая высокое качество обнаружения при меньших вычислительных затратах. Дообучение улучшает качество предобученных глубоких моделей по сравнению как с замороженными конфигурациями, так и с обучением с нуля, что указывает на важность адаптации к целевой предметной области для обнаружения БПЛА в реальных условиях.</p>
-<h2>МЕТОД И ДАННЫЕ</h2>
-<ul>
-<li>Задача сформулирована как бинарная классификация (обнаружение БПЛА / отсутствие цели) по одноканальному акустическому сигналу.</li>
-<li>Данные: большой набор вручную аннотированных (размеченных) полевых записей, собранных в реалистичных условиях на открытом воздухе; конкретный объём в аннотации не указан.</li>
-<li>Сравниваются два семейства подходов: классические классификаторы машинного обучения на вручную конструированных (engineered) акустических признаках и архитектуры глубокого обучения на входе с логарифмированными мел-спектрограммами.</li>
-<li>Для моделей глубокого обучения рассмотрены три стратегии обучения: обучение с нуля (training from scratch), предобученные замороженные извлекатели признаков (frozen pre-trained feature extractors) и дообучение сетей (fine-tuning).</li>
-<li>Оценка ведётся не только по качеству покадровой (frame-based) классификации, но и по вычислительной сложности и времени инференса на центральном процессоре (CPU runtime).</li>
-<li>Конкретные метрики качества, архитектуры сетей и базовые методы в аннотации не перечислены.</li>
-</ul>
-<h2>РЕЗУЛЬТАТЫ</h2>
-<ul>
-<li>Модели машинного обучения с конструированными признаками остаются весьма конкурентоспособными: демонстрируют сильное качество обнаружения при более низких вычислительных затратах.</li>
-<li>Дообучение (fine-tuning) улучшает результат предобученных глубоких моделей по сравнению и с замороженными конфигурациями, и с обучением с нуля.</li>
-<li>Это указывает на то, что адаптация модели к целевой предметной области важна для обнаружения БПЛА в реальных условиях.</li>
-<li>В целом продемонстрирован компромисс (trade-off) между качеством обнаружения и вычислительной эффективностью: признаковые модели привлекательны для развёртывания с ограниченными ресурсами, а дообученные глубокие модели обеспечивают наибольшее моделируемо-сть (modeling capacity) при наличии достаточных вычислительных ресурсов.</li>
-<li>Числовые значения метрик в аннотации не приводятся.</li>
-</ul>
-<h2>ВЫВОДЫ</h2>
-<p>Работа показывает, что оба семейства методов — классическое машинное обучение на вручную конструированных акустических признаках и глубокое обучение на мел-спектрограммах — применимы к акустическому обнаружению БПЛА в реальных условиях, но выбор между ними определяется компромиссом между качеством обнаружения и вычислительной стоимостью: признаковые ML-модели предпочтительны для ресурсно-ограниченных платформ, тогда как дообученные глубокие сети дают максимум качества при достаточных вычислениях. Ключевой практический вывод — важность адаптации предобученных моделей к целевой предметной области (дообучение эффективнее обучения с нуля и замороженных признаков). Ограничения, прямо названные в аннотации, связаны с вариативностью фона, условий записи, дистанции и режимов работы БПЛА в реальных сценах; объём данных и конкретные метрики в доступном описании не раскрыты, поэтому интерпретация результатов остаётся качественной.</p>
+<div class="login-card" id="loginBox">
+  <div class="icon">🔒</div>
+  <h1>Сравнительная оценка моделей и признаков для акустического обнаружения БПЛА в реальных условиях</h1>
+  <p>Доступ защищён паролем</p>
+  <form id="loginForm">
+    <input type="password" id="pw" placeholder="Введите пароль..." autofocus required autocomplete="current-password">
+    <button type="submit" id="btnSubmit">Войти</button>
+  </form>
+  <div class="error" id="errMsg"></div>
+  <div class="loading" id="loadMsg">Расшифровка данных...</div>
+</div>
+
+<script type="application/json" id="encData">
+{"salt": "5QbPQDI5kb6yLepjwQOUnQ==", "iv": "pICXxE76nbaZmTlB", "ciphertext": "ht6FD5whIFOh71J/ynp+gT0WUtzEJo/5Fnrztx4+3ihKVH52nYiFTW/GqS6cLw+rwMKn+98DQMknGMQEsDDwIoUf0D7FohHlYF9fP0ms4SRrKcHAGG+J8lpFvB9NlgCwdrZaGBMo7XutPxx2f0iwWQl3P4s9Nb7lUC6e6GHiOhWRMvXc2lpwCGP9wy4XcB4HJ0BWId+TYPmZ+xWqhdroQuGd4BD6lHmUTIYkxI5q3qT0gs5vssuV/FsGCK0cyVhhzoSWQYu9Bi75PTnH4Oqyflw4hdrSbJoTzWBkdnEKamfcERsbRhEOEr1pwzwvAetdnyKHD/uMdOsdSE16gTUmluu+CG/nqDSJcJ3yTxP3nmaI5xbV2c++li1sU1kjAysivUqdWmUXGc023QnX2ryAZomv5G4Bbiv24OTfyH80r6UvEmH95TSPwYKRL7RJ1Vksb1dMp8rDscH9wn0t2YYOgMEe8fm2zwI79nF5U11P9+uD+PHTSsmVNJQe9V81FUjCsHuxOjMNFOFz2xfb2ZYUlJsm3MfrqH42E0bhYD/gtqiNqz3ngNDBeBeZy9qrwZzdOkpgyYXa5asLSrILt32kfILM9Av3gE2PHv8ZjIoZotdfH4Ooh0WrsZ9N8xy7yYjDHoKkWb4yRjyBkkjvT7Lgjv1XbUyytvnVAMSFObPIwYTEXTkIzjxzq7g+bctKDJnUPwI14uYMiH/mjBM+UhWZ6IoBBWBC+piep293483h9/5F2ooCRdOxTpDsjVtSzGKfdTW+bYxGtOPWBIVMSMkq/qwherCS619eacmWlnfHyrbXXlnlBuZ8in0fHTZLZ4Urf+lGp6QSWyok+15vZ+Lds+YI4ZrgZ0gjaO1Y9/9mQo2z7G+ib8I+X2qkvXLX+5ZmEojQyhQoEI7cv7WLPU4gCtt9Cqv3Z15xJX5xI+JUdtX3nKnrL2tbhY5gVoxqeu5vcMurcRPX+QJ1NHxfokk0mUD2ZVfFopgSKM34oj4mFymDhukyIMs49vl93tyYz/rDLuD0JRZFYXKsZvBYObuHLeRomhD7pB2piqUhXdY+CsOOgCcPvnZZFivbh1ePsS7YP/d/hTRsATHDGXhTWC180PdRjT/SbqGCxhZBF0OJs85k5zF+BsgkThnniK4OEUVPERYchyPKhKj4nlObc1nJW+YmMB7ZJmxvLFQQApl1NuQqnbGMAl9CY/e1PREjl0aEi06UoJ9X+2upHFhw753YxYTYR7qKDabK1IE1DvbzZKSg1aILSfM1mq8UoVsBPqn+oN6fyNsncx9X0qeriVEkUGlOmPVWHn2BVta6ejFVPwzUNVUamd21FX/XjR+qf/GGhIYozkc0pogq1GK2raiMdltwTSG6mh1rN2as+i2kOPkEtba21icQzmHzY0INSJLS+ls5OglqIPU/QgaBvCGpE4yVJ1nc+MYtnNPw9+vQPBahcPEkSDfH3dNf8MxDYMPQv1Zp6wBI3Ydm+BhWpQsVxxg955YRSEuuQ6Fd5MKLJ5q9AfOBLOYFvd4kHAwLMAMrcCsQ0bfWQLgfGUMviu4Ex3hobTcBKymPA59NbELzq2WoNhIAzCIR2Mg1BbA0S2Ty7JLntTxUuZiTRFSu3G8dX4ieCQZcXIa2/m0injHdZ0RqX93UNgwEqaJ8R2SLoG8GYNuFSTpcMnDGNrUTRAkAtyH08dE12Emepip9VbKLzDMkO+7P+kOBmp4CC+VjOxBfyhgfk4VvXu4UItxE6Ddr3lD4AH6Xee7tgAr6aIKYEyPbmJaaf139wzTtN1tMFxjh1HIYbpy7Qf/8olW70J4ONAmjtlkgqQU26eZmtGFUxjDvhtVZbitvZzAFe2gp4EW9JhjtdMGNGcPJh8ydNGj13IU7umtYiwO1pBQMAG9g0KV40TSXF5I4BYRoHOU2I7A7udyXF8Oxun/9F5Ic9x2KqHlgBhXdeAVCh4WjB7dZMIwdl3HNvF2yLbQjXuNqlaJLAva17XTT0Z5MUcUUBbFTvkwbNuD+PMwD8q5WOO6080ymLzVU2lCY/f4eUuWzvieRSQUUg6KxbzOFiJAqAAp6Hu+Vntzt8QEwXaeD6rh6Ph71VGjZPL8AtdAuxwwTaCIuFy8kgYHvDef2UIlEimC5LZ2nbhsqWD+pUXbuKhsBFQg73Ws0TIdp6t3mO+sXNbrOyWKV0r9Ej9+W+DLJdSlYgG/VxuAlryF5pp9pUEoCORVaWUI9XzYTDL3m+KBEKr+wetHBdc6RN+70W5d/pPAoF6GhqS+vo8CosfBP04U6wFyZXbyV57dnGd8OxrSvrcm0c9tjVEglXz60+afGTbQbvIznggDh+J5xAKMT48pdM+o0NF/rJ/8kPBZ1jTgsmMCczt+pJLh44FYwnjqVIwMWiGAGuU7YKjGn7SmwsJPsoafCcwh88CPrNuehj9hUQOnet+nd3tFyln6FMT2AndXSW24HrEU6h9gN+uCXQq9pKd1P9szcB5u2Z+Qb4swxdVIX0fxBbgSedG2lZn7a+ODDqYGET+bBKzBwmTeJkRxfDltLTf0M4Bn36mgjkrrw6xc4Me9VSZNdgHKr+JZ+1EN61feHc2cikuIRDMu/SSUl9Y1RNXZADw0d/15r9cBehDPlK2CiZChBZ3ElRjSsqsCvyY5HC5t/C655kTBI8mxKXRr5F0IB1uyE2QFBqcEehcD7i/hqtqe82dbNa9zbwDrzREL+1FkHxRvweZav8VL+oc9RB6WenXLM8o3BMFlBQDmWzGHUKH6uS2LiT3MwYQCpIwzZ7+Em5mR6R4zrs8+SwjD8O2geFPX8wVWxRFqDtKJJ4qQlp0SeK19yMDSUVtB2Hj0JaJseg6o+PjL38Wqx64GuAOKU+3J48ucKJGA38LVqFbR8oCJnwRVxL9bgDgpNYp6AORGEtjfMoxxjL3sSxWisQHcMlvdvkn2pKTMaix8JGuTVf11DM+trT82LEOJZR4/gb/MZ3hSzLcXXx/Kq39XvH9O6tMTdf0IZawzkp4h70Evf2yjD+dxpBbIMtMkgIrdaW9n+yzVIiDOJUUv89Z/bO2yf3R4J83cmh0lWDmo9n0vBZkv1XZNNFzWUL7E4JimwgYTmaTrBjqkXqrQZqUtzqpUk8d4EphtTofDcifcLur75RvUYiQOsJoo3ENQgFDUskG9Pl5bdKWSwa0z9p6eqJ2rU9s/NF1/zwco+VvYzMLCtXt+xF9FM8imFb/x1ANknXXIpyRSYsfgr7E1CJn78nRvxP7YAPw0Z0MLnn32OpvJsOuHDNiQkkiRE23ZJC7+W51KzzT+pwhKkIB3meCyw8XjL3/5SoxWQ1ai3zYwbeqYBo/8EqkwW+4NqqGs0VSXYSmUWzlBf0NmEqia4nZ7HSISRGeosGAGR5mAi/HyNKQqsd5NwraRKJF2ckieKpCHOes9sITZZHl01wGuhBDgLzi2Y8IuXBA+yoFL0G5eqCxT6z4XcDEyQ/cSnGgrwsCG/K4N83K95whT+aCIPqhmrhwDwiNT+eIMJyOG8unqXYfk9d5ynIvradqtrj9+3awhD2IsD6fEoWMV1EmiB3HRBq9kigvDFGHEkXWL/5R3qlHPwpmlwuoEtzyDsfsiTjjmXGKJT04Ucv8CLBBF9O2GIWLpLTXbeUl2q7wSrqDy9TbwZcqQsIpM53W5Fm2gZSqHhegCnCL1AjOq7/HzzNSHh/xmSIMf28HCWFzO26biB50dV48bje97C7NNcwGjdCmkZZt4sgsoQnPjGXWKlslkCi93nTfqo/qrFCbgSjCoeo0z4q+bGS9QEeZKv9sfCwqSkyTTVVntPzmImlxle8Kmrxs5d4r4JValXmn+ccM84GNnfYYwcDuocOM1WoVRL6DH6UtcixGh1o993OZCeHKBZjuc6N9Rly4diXLKE5uPP8FfDaFtEViaLqTtC0Y55+ZIzdvhfHpftzUwmZ4PuSDaC0SrY4spgRV4PE2iZj59YDrIqZsISaKNrOJ+jeTpguaqXgCJH5/h691bKKSMwoZA5RjnyogyFUGqQzzpxs6PTSU2v74VsTjE5NWimdMKgswfluYYVE39hfXlsr3WaTPvvcgSPU2pGczr4SoRMQ9+KOzvZo01AzOgNJ8MllbCV7U96dtas96VCax+0j9aT5OrjVqf66eD0OAcQ5WKeFmDdAGkvk9QL9DuyYDKFJ0TrAi3Y5L4sVY0dhyL7gcA6fjBj3rCItTEXWE7FV2eZZWOLfLlHyFqZLuiOYujM4SBQUEE9Lf+Ann70UwHKVo0i+6w3mkm5eHQ4QXc08USvTgH278nQU/jOnoS7V6q+0IYSPuc9zgLhgKgOlKjrGpk9iQFPu66SB+NBG+cs/GKnFOPD4GdXTXzQnMOp9G6cpUnQH94wjE0Q/9wN7trTalpq1fG21ACcyYggzxG09ehHdBSXDdNSAMFgGJqMxQBO1NBcIMTpzZ6ZtDWo77Wu92WcJNt6Auv18lLljnSV26yop6Lqo557xVkcdezVNv9Z8hAicEnjnGGwg/Qzah7P+P3U5qw9UKjlIbu4xh79xPAkdSQUGZqWkCfm1WutVeu4qF422SPceCHoEeMORnNSpzKESJb/qDdaL5YqBTpVPOSUdT8lZ+N3arbuUJ2LwyNlSQka7jdmU6Jgu+0B3NFZ1wHvuZzidDG1fhXmuDtaHRlPsjBG46D0wgZoxDa4WDJB7x9+8TVnktOYwBMQ6K2MYEMpsTgHyZm77uUZqdV89NO7SKmFn24Og3axDFGD6XSm3aG7J9r8sgLFIA5ptzyz8jmTLW2/06Rx7HIWNyNJSnxBWJcISHCZkvli9Z1GjORxbM7PTd+2J8zRPipc2q6u1tBudAZQxBzV8WnYsrKrRY8/hGoqQZtExbfQV2e4TyS62jMTgu7BmRyk7lrCwloGANEPw8cGI36sTEvaQGnuwyIzoG94wL2h/TxKVfgzLKiXLRb8oXsN7DGROqqhAU5zoux9taKlk08oTqoVOSkQRr+DN8/9KWvc3VvOxRf/pG9OP8DOzfUf2fAVetQaf22r10qWTE0+luK+Z9kbpTul34A733dy1pk5Nt/n3lun4rawjoW5cy/ykXZWMsylwpo8qehB0kS9Nxy1RuWOEwR6WCOkch/m3phK8wyVy/OSbahM9H2sCXjTdsM478wf48Bv631YZvJ06mr23h9sWMs4dxEx3H8IUY3YRfbh1pUImEo1bMdBzIv8a6wDO3pfKg5p64V0HJuAO2P0DT1fPxNDIa6f97PvMfQk3Ph0gsuuMew2TDFm8HTq3U/QWO/Btvi4j46rtT9AiqgEVQmLiQR568mAEu8sZhS3FcDMl7VQsLzwMyFR1M9bv7kbKsYlFDCILMfs1JrCJPPopC5SC876emidUNo+Z7b/nIXhzqz+m+cEJ2fdZLzdJVNjS1A39mVKIYBky59a2i0p/J86mc3SbccJqmQ51m3VIZ7bISI/QQ4VjlTywfU8VMaFbXq4T7+Yc7zvCHoG22GbOjeBuk1BDUC3mwoB5jKRQL8CoAGPekgkc/r2SZH9F0bYW5Rq8yDR2705S4K7XbT/d54VQaU9HWHqg6rY24qHtw6g39rE+QB0LskJc4opqZRRSnvYlWmEGm4qY6lLkRy3hX/6a1ytdk63O5LFXQXHGiDTAcmEklFZFqdbl96vGghuGVWQIflg9npGZw83aHyN4VnXknFTFIH6t2ygTQh+5sgsB0GUSQ5hZLqUnUjuUNU8+5DlnVpRaABjQIPYUafb+ZZ9FoVU9429LEhpQEc2sShXZbV8SR0Z56lokIizZtLeA3d3744PAEjNUTtGYjsK+GSYliUWBfKG4imKVSVYwum+eNgPtsPlm+7MldYKLgvN0vtgtQRaYTFe9Cx/WIgyBUu1XtG2Ve/LZcaTMR50q/TrvAO2yl3uN39RFVRyHGRr4vby9tmw8iwTYlMVxe3/MgIVBy3s3xmIUlfHjcfk/BvvPgcQUk9a34I0NmIs770h6o2O15130aQmydTxyHSLHeCPpkfdhFX7HV0FVArK4xZEFHbnpTgquBzBySdX1baFDcxuGlrDB7EHrySpBhaLYD36jDYVvaLS2kZAzZQYN5CTZddEWPdNT62Za23mNZj1fz8suZAIAr+DLVgaCbnOMQxHZs6/Egg96yhPMg/L+yXnxXBSAI+cSvcaR/Pub8QbYFW3L0pz7mpCfRAfJGyVK3J6n0S+Xvb/IMD0blo7Ia72Vbr1z6oh9RqbXgeEjjifR9n0q0PmxsIu8WIWX0HqrTXMdNxGVuY+zj445vMwk1r3dXQgzFDNoErzGLPUjUfBxiZ1HnGoB0vM1G2a7h9abaFcTNfazfEa4JBAqOJiRrQLkry16GMIMzTxFwgr8/CX0W1ZZ0q6tkDZTzonR5JWr7VU7t51npcmwELgqlKiyBxb4wIAUEWsIx+6UdtnymewwiOEZB0bHM2gmxidc9byckaOpibKHZxJQwkKZXKctbyia6ISu3hTk2MnaLBF0OCjR9qCzfLz/ikSVzFcfL9F39IT0nXzt+7rRBioPUEEqzL2x8yX0iUKp0xMa0rCV1JjnWUPTfebnnh5U3V8ZC8IGurhJZeyfpJfH5RjjuuKQjyMJIAXBglicmGxvOhDYKEq6rpVVitV8wttY+OZiUHzlgVC90oRWsP3ExqIvtvNb1melHv908f5H1VcOcvAn3MAWhXwN+SzewZtb1g8TmLTupU+W880ilu4Kb12sZMzffNdFTxcSm4lhrblBPG+0nESMjdwh07lRJdTKg7nQ4uaiWsoKOAvhYrc7FFEHVDxWUBm5XuWRxD0YVo8pDzd6pdxBx++8+4SDkf3bUgY2yhgjauHrhIkY89ZBYFNNpv2Lqxin4OBnNJ0QDRfwa2zrkq+kstG8pN/Hg0ppDPiXsZdLId4bDZ+4HOe5TePAmiHaQk2H5BMbhePqHJFBxfqoRAXijiREIWq+HyRV07AJ8SobdbW/A7gfDM+AtswVAmF1PwUfD3Qjm98+AxaSIi67KtyXOMR1qHMe7wPjPg2pU5rU1zl+HNfbVE6EeI8DoX0uMLaBMEiQGrEns6j9NszH8Ta9aIq0fmAebyHYX+e+QZ9+69R5r4OVY0hbSUPpwJWDBbRIGyns0InozhD2fNu7NUfHdnv4npyGozwGU1ZepYYut6CgB7A0pW5hero0mtcP1jn9XaJp5C12MwMAWHHCgTilkb9WzcR2y+rzZqpMsI2B78ajwHyShMbKwNCizkPgKngBqlsoCPFojhUYMF1QGOckX7Kjn3Mgu+cvgFXkfpftcXloAjZVqqYcqZOhzavay0gu+p58XsCJ6ddkkN3PsSIrexl7/gNr6Vv/0TDS0i5S/JDnwpEhDT7dbsbMNwEs/fetP5c+xZDkZX6fvMWR5CnGJ7DHWMJCOQPFGPZETQ3CeGwgb8ZUg6Rf8zdvtG5xmACqfVexrL5jWcOs+RJCxYiHm2WVMSr3MysOjsEfXo2h6gz6JQrIl59dATMT+fNau8Y0kQee1o9p1soP32hhirvtZuyhci/sdv3oKdU7XOsmOEfDkEZtVXZ8gXgQD4q422ynGsRxH+bC1Q7Hc0bfeHkGhd5O3x6d/Jhfw4dUcpUEieS2570PXaclfiEd9NcOmsjv+TEbMejkqTYWCJq+jyB396+7PzG62HEx/0Mh5bG6ZdwwQfZYFmOMz7rON1I+9ykgdzHE14YfT/d6PIuLpSEj1qPhameTsp0hdpfmVlEUzzlNhVtkX4b0lPNyyT5+rgWKBLWjSAEhR4SA9k5swT1xYGqIxqI1YZjEfQ//N+3Z03jQriZ1eLnnuZCvq2/l7SokwngYszJ+X//+lcK+jT8URmQYB9ER+2eqMZEbSoy+Zj6rveB9fX1iAxXRVX+/j0Q0HLTPGK9lsr9awgR8nM2k8RM27rlr5A+wjrAkuWIe6LoKsRRst1K4r10sYFJN4gJvXEZAC5iDdkm9FRhJ3gKa8cEJ7EAGGLiZKtZeIWq/FukFG4UXxofQ+Obkp0V5AYgFwdsSrlmBImi4TL7UJrjyVfWfaxdoLJuzT0iV3W2IanuxsoWf/5jaUw+zI213WAMVLly0SO5zpkxqX5Os2yY86QC7nDWyL23Ug4rDWnbekK3ERVF9I23pzao18qSC30odjs6+hgAUGkj0cbM4QPelix+zYsdpZpnJ8GmxqvODOAmrKQcOrrKIVoaEL4kv815q/ZI+ExqpFXf2XDVe+wcBGaR6y2A72w8hAyvrLp2c9D+g6ICOIcKcF7I8cEVBFYtn+93y5N2Hb+pHX3lRpY1E8XpKhKBYhaqlibTs9+xsG8kDWLJXpHD6hoCbwo591QsZ2844nJnTe7aZzAbtWW6V85ZXqxINWZEk2pHGnRwU5hxnX09SYTNxjwXPPU0LPmZAlbBWH6PyyEnMrTpWIO2osPIzZlIcM168TyTlsPEfcO2hlwGMDUKi+xre87GVewdxrip0gMw3Ly7G9D0xNyIevT6BXAteJtSxkXZnHcu5jEWBhDa5CzpdhIydQ6QX7AFOnPu8P8i1ooKZTa4ahTerzCop0fiWFYHgzxNdj7fyalk8nOjbUJRK8kSwrujWwyEBDT8Uu3gpl9B/AP6vNhPHFXm7gEwlj6EJmsU4ogWIVCk3Bj8n7wph+IJmiK6TBxnx29gF221zTSoZtGQ4qENAidk6e3ZsdG2AHoN9rGuqpd1URQaRw9OdYPLmjirwja/Nu89VMYFwrCxEySWMVQDqatP0zdMWDNfdviJ4bobuIEsvn/X5Q+lTZutthG/ILEG7R1dilfhncKyvLZeIaGIzbvesiktLxG4tUFmxVcqjlrQYcuAhImdPbN2cri83RGhFr521uLiHjVrfbRxb7XpMX9z6Fw4LBj5Q0u2r1w0DmwOMNO+seQWAZZpaPIXOS5MxIrK80zGZaer8Rb/bNce+7gOSLMcdBxxoQYD+Yx0keFVL/wGzTiJpTRTzhE9O9IUu4z+zXkMiVrZ2aCPcx0LP5QHq3jS4ihKlKwcpIhIilZ/+Vn537d6iWRMxHTRDXMnWBPSxFzYXtkE0oLNewbx6JcXzBuXPR2nvgktOHQIs+bIDDO6lCCCM6Yv4L7mYP7TAP9c1+Otr1hpUT46a4G8IdHHtjrzvHZLIoNAEtEXq9u1YBw+qAY/7tOE4hJmj8Ly9K2OtyqPhcqbOD3C20tDd3VJaXVJyUpkG5NKnZqgUsLyaL86IEIVZSv9IqfQVWZDRuWjng4MIv3+j6akDeJL/M69+m9Yd8TRDUr9tOH50/ZQWjM+Eo1JC3VrVOFqQrYk1x3/VY5ZrvwyUjgdfz8H6gRrk2YqOV0LWGvmMfwNvQnTtPlQgVPujniguQkX7glOf8tmAyhuUoGaETAAc2Ytxgrv0hSdqme3Z9iU+CyANqnC6uxPdv1gPunZhAWoWmQxm0f2+e/9Td5oRCq6jNJt5rXHuV3ulzaQtbAVQcMA8d38M+8TnM41aNm3Zd0iG61MWThhxLmEJIJNoRkKBiIj3yfpzBrNlZkxhQchAjVgoJbb9q0SsZs2WYBx/aHYv4tNYbiKocl0o3GaC+f/r27nrC749JfdlEM82bPpIe4Ri1YvMxJkJpCY7alBOs16Wt29vXDz1XLDlKha0MJAbPl8L4n2gBP5eA5eC1CjhMop2pJqlgbJPm6N80AXQwaMyjS5eaapyWcTaXVpjUyuK78VJy0xh9Bsr8WemuF+uQMbWkBXgbUSNuJb4xuPiH1zwzkIrXYZfj/+Ur1uFKAlUdHFloS6Ylr9oAdBH7FPTwJtdY1tb0/B7nFdBupqAnqyBhSXUtfSFSgpsltOp9Mhk7u0zCPyL8sZeIXzBqEkQUEcIheKsJqGHBJ2NT3sXdPDEDCTSWWS0l9KyEB2Z+nSClWkTVk5dwRVCHFF9DdqBcvou5kGd+G9Mo6MGVbx81O7BZdZRl8cqEVUZCS2UTOonxFau8cFxy9PwlnosCyzTXwKLoqsvaaclA4iS4O9LabZo0bkOtwv+g3PXLjnuiu6Hs+LN2QEak0kBBav/yHetZuYWvi2QS1rIaUsB45x4e/N3xROUJl6SslRRjfWkn4GOB96YHErxDdpPLroBXWYirUIHlpS7/Gn+uBg+APncPyghm+OhBzcNelH6RDgTX1iAD5XDkIjHkPNBVm4PkIkI8Mn9BHacdCmv50LM8eSletLNCEzbsMShOUEqOvJrUuUG6CKAuAQXHF19eBnwAk+CalHKEoYb6Dz+hvggTn4a9A6VFQJutlP0kim2unSH/qxRON+DbAL7550FzXvQdDJERvt9CthbnrqYjytLK+o4qETMD/PpmTU7rmxWdGz92WeDqIsic57hSMNkWt/7Bqd+QEmbv4Vf4VKgO1RkjgNy4bDFJIzAIcZwv9e2rs3vTcdqF34h5axpj9dJBcg2vOqG1w27Zlie1GDrtdgQmRzUTkeYbw1diCa5FIOzjplJS/q58AtrkdeA9mK+Y7I4hac92Ev3Ei9Q2NMzlCexelgtEn1i72ebmhy9z02DowzQp9lfWzqv4xVyCONvbEpmtX9BjP1kYWM+GOYjUr/kPWZIorKNyr2kwmYt+z6bolDVmXGbeVacMKKpBWkKMai2OLIXysZnlLhob4wPDjKqfDNs/QaOvnsozyikESQl5i+sOwF0K9L5Kv8ZpsSzV+tcU8HeQMASLEEU6hObpiNbeUQmAtVdIeRPfERchIiKeW9y+/URuOm8VnE/kr58LdrAgt8T3/JVrt6Kt4wgZuzQfQ/Vx57PkHor8of18+KOal6bW8bsUHKG1WXK3vRbUxBe85hYfA6Dax/NrUl4FK1GxoRi7ZVmNRyRpUqdzIOOLyrna9f2ftgpf88AS0ftGvTJUexxvuG25jEQs0NXB+h/+5FSQqCQjITAHP5xheCF1NYy5PyaiIihJpU/SfOWXsqK5ou0QQwHfbUtnDDZr48ok0GvmvDxQJYUuzhe7kQUcsITniavDJETDqu8CkCJSN3mf8suMbRCR90Rc4MyzpzYT1Lir1BBi+6yr3J/LGg36Liir+cdOtFpIjobShgkyjoERYQoZxXIo/f9fLvL+G+kGBiHVnB0xt34ia7+PTe/6D/ry1n8pWWXkvi7MZHMEKe9j2ntMaDmoeKmin0xeeTHyyKI1nPHLNeNDmIdn5hNIl26ANmhVzOPGT1OvoyZM10cwI5MQfNwIqisSsl6+VnfC8xiixTNbI5FdwvErDXZOxJWay8g0qWjyMmzslvnlnTWnihwJctX0OjiLp1bt+Pao27i6aoETdRVppjodx51/sXxL7hgY1v7K2VTXON6nwd/O9x4uji6VQS8B/O2w+O9OrkvgiLKMIU+vMzIzfF+DZM3gicu2fHEStCrr83rtsEiHYHje621jlbrP2egB7vBNHxkpirq/o76PE6u+fMWaHc9h8WmxoQR/CX7IR2ns5l+gSkrPFrNBj9Lxb3WjUYDdzPAOCrhydyyPUBUV7aBjJkalDQyDtwpm0CWNlsxTo5RyZ7TprseIBUPdUaP42oueKSUqZ4TYqb/q2xbgQTazFtWLaryhaYQwFlcXm600IfaeDsa34ZIFvoCoNTb8qB15b/6OZQ936W15UNb5vyMyOEIJXwhZDibaF6vo4kYuntnplkCQTX+fFd1s4APDt5XJ6wZ697pRPc9K0mG5TG139/BBsR2zH/axIiIqodUtDh9VnnZr9i8wMykA9CZhuLLiMoV6j47X4D8R4Go9qQ7zpZCamLYeadhOj7kTiJQkjMrah+5V7Xdz6RKngqwo/nReoN16mzFUuuDXuihO724GHn8USert6Tcr69wDsuSwx587YxfpeB0kDQLYq/OM/FlcbZoRc2ajOfj07Q/xcNEZkVFn9muRZYqloujeOoV9Sqv4k/FJOt/eLE0HQveEuiaC1FUzpZpBAQWEbsB4G5TmFk2c1fmWYk4cNenFwbPb1DTSyV7UOej+6rTR0TAgVTsyVr90AmiKJmFyvFkTNwwUtpmVgThIcFjFcFEmDR0+WSIuGxL9HInea6K3DU+wXyz1Sy5QxaOTxW43V+RKC8TyApy9jN+yF0ENUuox81KgTTte2Wu7TSWbD/qSBgX+cL7iDhutudVccrzay6aYKwTPF/gfRY6bpxepKLmuk2IETTIjKyIOQqXyH0NxV6x6gYvIWXoYyDbsNg5kx9OMbGhMwgQWGXovKYhhnN4kB5aSlRGLG+gNfVQVGyNieBs+rc9GCz5dUExgsMgMbsg0TUG9CnCOKikv27JvHwXT6Co9YOaMfp0tx1TWCT/nSLPCIGQSmD8zP6C6umMJuYO69TkA8WaaP2daHgr1//wD4mvJKlUCivlWyhDor0PZEnTAEQmvh6qtyUc+uFn3qHPHWIGjkSKRGGUtVi0Qp1y7ghqUkfUstGhSoTWtSKmHvCKFhj8Ul9MU6nZ3DdLviSVyyiDLXO+oLr623dAuMpcMChknjTBUT208Tnv2J5HB3SVK0MIbDuMUgTw2POh4XS7l1vmsjhZaqEhfoL6OJy2nPZ79SGsW4RU+ffqJYVDH0gubwEgf+7HJ0x11NNcduBikZBDq0CfAuuEnWD4QT+knUUWT5wl+w7wDf/NjDTj3LndChVOJWRi/Ckg6bjc36HqJxMdXxy4F3N+jthrys76FMkIMD8RG+psn0rsd6qGK1+1B9zzgJB77rORpsTB09iU6B0gPBXcPycYjJkxo4/shQpxcanhNkCBO+EXy6R8gy2CEgkHoGWlzBx2zZUuhqm2IO1pvOsQC81w2rOjW0u+4wb3gg7T1bApIsZfnyS9VdpA7dP6Fv+fc3nKhoX63q5O+PyZ6BkxNrBQbUZ6AEJjRHhod6Aho93OiI+wHCd4CfGPKjpRkI0Wvy2o/kGqe1NQc6arti3twgdjJ5NfWBve3v0h6tUCMidK964id3JiYYlBk818JgBjihQ2Iiel2h8Y2s1/PTIfSitIbA2R2/MY0JrPc/7aPR/Rmg/VMySskvAnTMoqqLPV/ADjGmj3Oa4+S8ssDW7bJpTeOXSa9fFMWp1S+5EGVVG1Sg7hOMOaJ1lgIzXcjoZCGv/whJlAOe16TwHrCYlr3iXXLVkr81nl3IRoS9zqyQRLh/ZW5BLrVmb4j5tRATOB3rVm7uzafg5nFEhlLgBy26vXAq6pSMAajUAWurq05mRYGiWgguYcsYctKPYC6RuyL89SCy0KSfnmmbnBu8kZoAK111e4M3wsvld5GLRn2wLZoyOnxiC4Ks2vWdlIoToJnJSiwBU0hjonqfKu1hwxFQT2IUNYpfWKrmwOUr5ulA/rOs0cMKyOGPXG+pIJmpt5N8cGYpfWoXUto6quemVUX2R2fIGGIm8STj3Vo9iR+pTrd6BYM6WddqjVqMEnwkXXuiY/4swiEJcpts+X1/q/V/hYjarfVW2bP616hSH79ziVY9yXulG5ZNSOYZw8Tif130ySoTBmr2BHRbcouSQHHL4+HvSXm/CZl54hR9R0KdoI3z5kzTLdjIJC+7RU0X420TsL5cpHrvbmuV7U8ghcpzQmpludo7FGbyd97OQs0pot55iILm0wPkbqZxMVi2B5i38AUFon9SOm/7kfLuwKAxmU/aOFTL0LjxDLh25WwUokPmgCjWj790V8CnLRtRiEQvO+o3oulMYE2W2OU+dtcSHcf0SfBZXerauaQK4a+1HCcfs7Zcd4tuWcxqSzxapIg0Jctk80ikusNYDz5WcNKFjBgu3ZTbWwwXJ1fCIW5uVtJp35Iltrp8zHu1y8GA8RuLSiIbQMDr9EflDQFyLrV9gwK2MNOwmwnfYbJc6mYW8jhzcJzrVqsIiegT+P3fu3J0/xPyn/vzfAZSoHz8wQtWNnrMTmUSXZ58wCSWmE35pjaRGhTstqDb9rRvqBaMIgUiHJlh03d4wEZYZdORqJo4ywNefm+5QMI7QmbitTPLdOLSRIBuiG7pSnJAQYPEcjxsDzjTnto9uvHrqt1k5I4lzzeWCJGa33BvpHe35zuMMlIQ+uoIxve33Ghkbpw8e31Vuq5OVDYSQi3HyMY3zYJmfZ9ZsnXFW6fBY4F3xjrKZiYA28ODcOKgAQCSjEuehLkh9MPA+HAKmjE8UgaGm6NXe4aFr0a4bGAlxnINwjuYnGdrzpcP7YtYSlZWIoVukaBpCP8GDET4xN/DbEhcgY6nmcqjZ9zdHrNG7m2mig70OooQlLTcD7s2jEgSJrHMS7Od6WCTu3yO2adPmQ2rCE4BF+trrYDCdo4sE1FK8iUirnbKCjQuVX2mFigh5KSFZhl9ylcW9w/9vGr4fr9bqlsOPHGAeevNJhB1cTcon/dOnIl4Qwh0yzSiRiyQy4E6Hf7BsYf50RmiEut8ctFXw/U/g3jXWk8y5cXh1ryvBgc0EOEHbHCfdl71zsDGygRegkcaVJy1neRtwqxDOp8ya+ZR8SUGueypLi78plKcLfZpKVNy9LAhD4r3Vaiggi9uU7EXFTI5auBgb7dQmaMoGHsi0+7j6InYZOkV/NiAMP7JTe1U54qPTdHThESL2mYitJ+IB4T4eU45UVBns+pi2VjMVIlx7LL7UjmB3P7DaLWd/Mdm7oRm2GVSEB5k/5KcSZIN7JsxG28nCNnAsO/HgMbUNgAOhD4c85UxRq8JQY+BK5lBjraL/1Z53FWcc6SXHLx3HXAe9RdjTQTg3FMjiMb9Bk2wHsu80PqJWmRVh3N5zXoLdE4ADPzRslguWYIjaHYQyEJRCaSR4bFxNz+J4sEkz3WQEWVzy7tuzFGlqHy3CdyZ6hLKwgCh6ufBRWxCkT1Wu2xkhjEZpqkZ3tuUrAfHa++3jM8DY6cLuO489jyihUtsWiMR7HR2PL5MYsKRK8+gOM9NT9TSHDguJCeG29YVLbIv2i8oPxl/yZNaE0D41Dwm0prYoOi51L4hK+s5t46gdmeyKQRc/jUDtA30ZDEUTubinnS9HZzUQRV2YUlnFKrawpCL4gQOw7DsRzzgqHmpdkYBMAlMj8d8kUutEAELpVsKckT/uOtRFZ8gqfiTaMRSW3ZNRS4y0QwYOAB2waLaEkZ1gKXwpCPckqk9THHJUv1TqV/341laAneJzlGUFAzUY6YuZl3edIVkTIbwKO5GNaVxY+pjh2vY4Q2rJGO2oZz8FgvRO57ZCTvHk3x2AaidHIO39s9ETvNihefwzOdQFD/2tjlAqfumQmkbkMcVMwcLfVPCX/vnLVyzH9OxQuMBX3rbPfSDYhLK2l81cJDFRWe3lqJPy4qh0sfB0R+S1q5dT2DJCPsDEzXB8kclas/JLayq9f4TVwSavW3/YJaacd0ymmvOjPJ9m5PhGD0rU1y0JXM34HckkrHn/EqPKklGaz2R7k6M3yEiYaj97DrTlRkY/E5aueLB/xw9QRQ6f/c8m+F7Pff1BBkx2hn497p9zBGSQl/gJg0cGmUj+xVm+7R/6BWLrvysXRhlw5Y2/Zm0cjgqIY+8XR0NWg7dCBnBF3ujku/Oc/0y46p7Y11NjgWM9CWCBgj2zdD+4HWzzM1doIz1oKWARZz+1Lj3E/vwZUSTvkgxOc/bQ6AMgaNmm6+2xXCfyiq+F12J4kz53XOWycUT8RmKw/4exp4Gqjy1rQGUijV0tTloIdEGDdBqLftwJkUTlhnWwhlnIJUIjnTeEoQN1TS9KFfB3hx0nGbl4kEkVVL99K3BpI+2jkO7l8x7XLUYQcEAc4IvtcWaI70e7xGTCUx8v+HReOHQVCSMgIDMVm4CyjAkN4FyE96KHV6aa2skFTuswU1/43icPyQKl1i9EBt2NMuJQh52ucR/ht9lVrcxIXd5MiGypT9C87lN0fdyZ/c7ha6LWfAgwo8NALMrofxSw8+yLlyyzTp1aEUVNO+/89kuSr7IbSvJLWVDBQbqVMZCIrhah8QwTFR1gdHclyTm3aQK2E0XhwxM7jJheWis6+wPq5soGhnL8KIwGLXfe4Qklnou0NnckICHDP8hBVNXxx5f5qvrrMolLeLXKgBnLJN8U3CbDBjpak2RcIl65+1M4t10UsB/S1Mz4LyiZ2WErYDFYtZOOKFKVt7lFkesGig/jiJiUNLJ6ahuoyCeiokiJz3EpInL38U66jGg/5bGd8+VAC0wRNi0GIlw1FtYBms0ehn1SqbMxsq20I1KHkBn5PwRF/wme8kuVjyQujXdWdIG3ce0y0tTnwqmLOKTcsMHvjfwdhmLaVwFT1ffte19XrjeNGyh812dT8Xk5uLHw9rrYcjOwkGELxaNJ7qmeyd/xIhhZJy/ZxCM8EIrEo2q9i/YbH5lVn3VMX3+iu88nT95FLC8ERuWkdkS+i3fUAspCRYkC/IDHnUux33AxgwR1aEZmDoQgBwXauqXr0z5rkZY5voEAKutMDtTSKEPKHU6U24x1srpo6Yu5JIV0b9vTvldrAo00LkHAh65sv1PUXqOCXRnuCJcyOHku5A3K+HsnV4IhXEuTTFZVO+SkI/r3PklOfDLUPYb7f2kBkrY3J9pXMRWeY04xNzs20kCHmB//4loz5MBfyazLxEOTa4nNv5hwVVtR6ZC/kcrnVTkdq02vaSV/X3MhUrIP3YBqyYDpxEv0OeUVX+inGCasCc8nFFIuywPXqhlGzQ37aUHe0jjwU9qfR0+2Yk9w4IpNK8GcfslIOUn/f+X/QeT92uvHdvpYuwgLRojh1SxyGlAEdBg2fFQyid1p3LshkA/TkL8eU4WMsFJI4lMYGV0B70ACzMRB0+N6jBSNqrCuv53hBOhtCRZmERbMjpu2ucJmvZE56foFhKyHsS0Y3/SswDYRtLuoRFSbVVN37oHNvtf4+wMIop520BhfcTFnLoKAG2yY685IVY3iAEZSmPIuvLvKxS8diRqREm39mdrmXjPRKEsN8Ff/jwhsq8eW6zzePPFcuhSCJ4hD2S+BKygTfFCWmZprEJtKpOeXw8TMU+EZT5rNE+Ho5llzp9c6DRDomDVeVT8L+B1RNQThpfrR+PtC1X6uPZ/6jPecH8oBV+pTgtAGQJpS/MNSN6OaK7+uj+VnI5PWmqlI/fCjTQ+rady2a+ngqmhkgLEBfMGt5bW+RLq7DSEjDcYHfYM/m/Vi3RcX4KFQWbD+snKVWIBJfOvgVq2en9mN2M4uVLOWs/xw0YKXufCzFGEdFu/+C45jFcC7ghjW0BiTQlQYeY5MPNQ10FCkdNB8ibpA+1ZBtclf/LTJAyvUqXKjAplfymNgKAeJa1bhF1wiBM3IrAKY0yur/ABYb0kQkhMyg83QRDdWux1skKf3CkwL1qiro8QRjuPL/3/h1TQEXk2IbuD8jC1+mjJlJnZK8LSfBDGSH0dgmwYUzmb2GPmDeQKtp90zKCishEjG3/D5Br3GicQ5Lp8r1HbvgnALvFnqWnIEAAI7HsM9731mjzOZWmAWdnaoQY6D7msNNguF5ywSwBnw1dkdzU4KJ/KcMb2NcbofhGcz3CyFgMIoTO0dbN3KAlerEl18JPtV6m6T2kAhac6+GDCe4GWFMsqgrLfgDmxXMkwKa22fiyppZiy/qabxRanx/GPlzvSQ8/2q4vHWG/c8eAz+ar/CkZgQsn7SDgmBBYGJ8tg8xHSEXhyt0jmSSxvBu44FztAHmHwA3lnu14P41ojIr/xBNXTp/74+6nnZKS6L9Toy/jZ958UBGT4EkrXmQN1J1NTy+jXXcxbr/9XJD/3ixSyZ2mM495nth14t4M8yaKLjEJLRckNIETJaXjHP2JIujHkf0yYGJJ6f2/fsLkxatFsT4TG+8vRrStzs3EMhil4WwO1nqYAH1GgNquo2tRqi+K8BrWBuRLBjWavcXpYRqSOlcmanLfY4Hfcpn+Mga7NB/0jTrro3WE6JPdmWhkbphEquN+XdnCWkgLKpnb1ETBOpPcHBmsn5Vy0GHxJtPUAWjspcx/cV+XGpUfywdtGjs2bZCcjw8NxB8mR8cGkTioNk4iJ/EFm4pgwJCjRI+ugaOOX/AlaGMBLxGYhFUJ/XEcxxRiLOOOw2kSCZUf2/yVgLT5lAPNcyi6DATn/Wqqs9WZQIkuh0YbhfYv5rCQrPg2gdr14XMpf1RoB6injlk3re2MGzI5T+2aFj0mLTZUagXBOTnxxOkXkNBchPYRJtp9Gx/zUfjQv3VdFj4FqD9GDvbM88cGtRaGpFiNM3BGB7ZPTKngNwWc1we20Bju3+xXabBTVf7iJ13REs5ALMkWT5mBeoGEmx6y6g6cgRms+/5k2FGd2CNzNVOcHaWexHrJyO33bI8jA4fgj8DSaUtCncEHp1cEj267TrbLFoCi0Gr1IUad1HNW/lmaL10j4XIGfmVpz2MsUL0x7gjLdAUD7pcqckWwvTX9kVJW8toxafnxz6kiGlIn4DPYWZS6KpWckVoV18iYYAh2I2b0KWj9lusJVIYdLOj81VHNLGBK8tu4Eo6NXCND77R7P6Rxzri/g4na0MyAiNX0tSouZOZkBPnIFBi89dusPanwiPxgy7Zz5Gd5usWGv80Wgs1CKRn5zcdd5DuoXk707XXh5QxmkqOw//sPpNIJp1SHFjtBSNDYcDCZWcxVMTw8Vz9tIIJQYGv2uJr1pgDyBffo7YGWmmkK+//kDCBsPOg9t8ILxllBFENSAK0yX+Nx2SofT33Te5il6YMeFbUE4uZEZWKT9kVMGn0D8c1na9WU1BGfCEa8hevi1ZcLBSaCxWRo7ue2zj8esJaBGQTADUL1OKldvoBnW/ZXmKsclQXZai1+7eO6GaDgHuPccuw6ev68++/Uk2tQYKbWD9KKbh//2Rrxi8gwYmWm4TKn/DuIbpXSeheuI/YagWJYdpC7astjW9sIb7jc8WX7S5dmhw9FMFEm+i+qkkE99YESLUFUjopLO/d8AA/HreEMaiR6w4kU856zVm8xPKKTL/X1oj2a/fI3awCvNHje/862sOsmx/93o0vVsyaIISz4FHdO8hoZvU3XiENTvTO7ym6OWr6Dw20+mtD1a6xGBs6kYTGeeNe51SbeS8uS1D03JKjDuhW1pYAADhEz+0PS5QzhviWGGce0gaaHpkpOdsZOUNJTZ6Wqc+QhYJM4uqfviWntKBisYyRTZqADx+kvT+Wlz0o6CgQ/SBP1bqkMBGQZ7F4PRaJ5+MQ8JkDLkh73CXtM/V+tf/TALCejPw/7S2dyAVnO738/jbtqiVIPS+fN0bi0YV5266ZS1oJabxewITpF+zVovCkYXhQwVI5D0zBIK1XnlNCXGo/rRZcyxBuZWdVpxo+OzLZBo68PIIMNWkYyyMM5KgQ8MWINksuQ9WgZfezqA8KRSwkVLEaUTE26W+GVHduAAUVZWvwftO98z/nZxCLJPWwgPv7v0ue3N/CO9nsqIQ+NkY2nz0aV3RX03ZJ5F16JEqlgyf/6rAdWINcaFRv0wh/0bhrAibbO32CZZ12SPban4i/AjGiqh43OT8Xbctiq4qtF9whemsHd7syuk1gnGbKp8JhzismjeVdaP5u/wFnUZlYTopZYorwzVbjViNJ7UPQ3lQ6nyapSyMYZvgKFs2WRX+69HIfea3cSeYI+2Do7GgWGbWF8wrmL2sYsmKFqYpb3KFAE5GfgDKkH2K3RY7NKzc5rKjbWDfwd9J3XuE4GnkXyB71yQTRTwGx4niYR5+SJKVFO+/+ujRMfM3L6+1hYEB4dTgj7pE5XU7TZ9n80pYiea9fCeSZXSId+i/DVck49J60ZsD0gEJP8XfZWzgV4nPKvUX0bHTzr4fcuI1rLBDnWn5l9a8RUO8NkRAUN7spZNTZ548RcNvELyESfG8R1h23Rwob8/BvzdXXySJ6g=="}
+</script>
+
+<script>
+(function() {
+  const encElem = document.getElementById("encData");
+  const form = document.getElementById("loginForm");
+  const pwInput = document.getElementById("pw");
+  const errMsg = document.getElementById("errMsg");
+  const loadMsg = document.getElementById("loadMsg");
+  const loginBox = document.getElementById("loginBox");
+  const btnSubmit = document.getElementById("btnSubmit");
+
+  const payload = JSON.parse(encElem.textContent);
+
+  async function decryptContent(password) {
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(password),
+      { name: "PBKDF2" },
+      false,
+      ["deriveKey"]
+    );
+    const saltBytes = Uint8Array.from(atob(payload.salt), c => c.charCodeAt(0));
+    const ivBytes = Uint8Array.from(atob(payload.iv), c => c.charCodeAt(0));
+    const ctBytes = Uint8Array.from(atob(payload.ciphertext), c => c.charCodeAt(0));
+
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: saltBytes,
+        iterations: 100000,
+        hash: "SHA-256"
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: ivBytes },
+      key,
+      ctBytes
+    );
+    return dec.decode(decrypted);
+  }
+
+  function applyHtml(htmlText) {
+    document.open();
+    document.write(htmlText);
+    document.close();
+  }
+
+  async function tryPassword(pw) {
+    errMsg.textContent = "";
+    loadMsg.style.display = "block";
+    btnSubmit.disabled = true;
+    try {
+      const htmlText = await decryptContent(pw);
+      sessionStorage.setItem("sdr_news_pw", pw);
+      applyHtml(htmlText);
+    } catch (e) {
+      loadMsg.style.display = "none";
+      btnSubmit.disabled = false;
+      errMsg.textContent = "Неверный пароль";
+      pwInput.value = "";
+      pwInput.focus();
+    }
+  }
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const pw = pwInput.value.trim();
+    if (pw) {
+      tryPassword(pw);
+    }
+  });
+
+  const saved = sessionStorage.getItem("sdr_news_pw");
+  if (saved) {
+    loginBox.style.opacity = "0.2";
+    loadMsg.style.display = "block";
+    tryPassword(saved).catch(() => {
+      loginBox.style.opacity = "1";
+      loadMsg.style.display = "none";
+      sessionStorage.removeItem("sdr_news_pw");
+    });
+  }
+})();
+</script>
 </body>
 </html>

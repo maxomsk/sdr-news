@@ -6,45 +6,225 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Детектирование и классификация множества беспилотных летательных аппаратов на основе радиочастотных сигналов в условиях открытого набора классов</title>
 <style>
- body { font: 16px/1.55 system-ui, "Segoe UI", Roboto, sans-serif; margin: 0 auto;
-        max-width: 52rem; padding: 1.5rem; color: #1b1f23; background: #fff; }
- nav { font-size: .9rem; margin-bottom: 1.2rem; }
- h1 { font-size: 1.5rem; line-height: 1.3; margin: 1rem 0 .6rem; }
- h2 { font-size: 1.15rem; margin: 1.6rem 0 .5rem; color: #0969da; }
- ul { padding-left: 1.2rem; }
- li { margin-bottom: .35rem; }
- a { color: #0969da; }
- @media (prefers-color-scheme: dark) {
-   body { color: #e6edf3; background: #0d1117; }
-   a, h2 { color: #58a6ff; }
- }
+  :root {
+    --bg: #0b0f19;
+    --card: #151d2f;
+    --border: #222f46;
+    --text: #f1f5f9;
+    --sub: #94a3b8;
+    --primary: #38bdf8;
+    --primary-hover: #0284c7;
+    --danger: #f87171;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --sub: #64748b;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --danger: #dc2626;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .login-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: 2.25rem 2rem;
+    max-width: 24rem;
+    width: 100%;
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+  .icon {
+    font-size: 2.25rem;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+  }
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    line-height: 1.35;
+  }
+  p {
+    font-size: 0.875rem;
+    color: var(--sub);
+    margin-bottom: 1.4rem;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="password"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  }
+  button {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: var(--primary);
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+  }
+  button:hover {
+    background: var(--primary-hover);
+  }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .error {
+    color: var(--danger);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+    min-height: 1.2rem;
+  }
+  .loading {
+    display: none;
+    color: var(--sub);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+  }
 </style>
 </head>
 <body>
-<nav><a href="../index.html">← все обзоры</a></nav>
-<h1>Детектирование и классификация множества беспилотных летательных аппаратов на основе радиочастотных сигналов в условиях открытого набора классов</h1>
-<p>Оригинальное название: RF-based multi-drone detection and classification under open-set setting</p>
-<p>Источник: Science China Information Sciences, 2026, том 69, статья номер 210305; опубликовано 26 октября 2026; Special Topic: Communication, Sensing, and Target Recognition for Low-Altitude Economy (связь, сенсорика и распознавание целей для низковысотной экономики).</p>
-<p>DOI: 10.1007/s11432-026-5213-1</p>
-<p><i>Перевод по аннотации (полный текст недоступен): метод, результаты и выводы — по данным аннотации/страницы публикации.</i></p>
-<h2>АННОТАЦИЯ</h2>
-<p>Выявление несанкционированных вторлений беспилотных летательных аппаратов (БПЛА) по радиочастотным (radio frequency, RF) сигналам критически важно для предотвращения серьёзных угроз общественной безопасности. Вместе с тем существующие системы мониторинга множества дронов, работающие на RF-сигналах, преимущественно опираются на предположение о закрытом наборе классов (closed-set): сигналы управления полётом (flight control signal, FCS) неизвестных типов неизбежно ошибочно относятся либо к известным классам, либо к фоновым помехам, поэтому воздушное пространство остаётся незащищённым от новых (неизвестных) типов вторжений. Для решения этой проблемы авторы предлагают новую двухэтапную схему последовательного уточнения (coarse-to-fine) — сначала грубое обнаружение кандидатов, затем точная классификация, — специально разработанную для детектирования и классификации сигналов управления полётом множества дронов в условиях открытого набора классов (open-set). Работа опубликована в научном журнале Science China Information Sciences в рамках специального выпуска, посвящённого связи, сенсорике и распознаванию целей для низковысотной экономики (low-altitude economy).</p>
-<h2>МЕТОД И ДАННЫЕ</h2>
-<ul>
-<li><b>Генерация предложений без привязки к классу (class-agnostic proposal generation; грубый этап).</b> Используются присущие морфологические характеристики скачков FCS (FCS hopping bursts) в области «время–частота»; на спектрограмме модуль обнаруживает все потенциальные сигнальные всплески, обеспечивая высокую полноту обнаружения (recall) как для известных, так и для неизвестных FCS.</li>
-<li><b>Построение семантики всплесков (точный этап).</b> Для каждого скачка FCS объединяются три типа признаков: текстурный (texture), геометрический (geometry) и позиционный (position).</li>
-<li><b>Уточнение признаков (точный этап).</b> Сами признаки уточняются с помощью модулей деформируемого внимания (deformable attention modules) для извлечения точных деталей FCS.</li>
-<li><b>Моделирование связей внутри кадра.</b> Применяется механизм глобального само-внимания (global self-attention), который явно моделирует взаимосвязи внутри кадра между разобщёнными (disjoint) всплесками FCS.</li>
-<li><b>Оптимизация.</b> Используется многоцелевая стратегия оптимизации (multi-objective optimization) для регуляризации; доступный фрагмент текста страницы публикации обрывается на этом месте, поэтому дальнейшее детальное описание метода не приведено.</li>
-<li><b>Данные и оценка.</b> Сведения о датасете, объёме данных, предобработке, метриках и базовых (конкурирующих) методах в предоставленном фрагменте отсутствуют.</li>
-</ul>
-<h2>РЕЗУЛЬТАТЫ</h2>
-<ul>
-<li>Числовые результаты (точность, полнота обнаружения, сравнения с базовыми методами) в доступном фрагменте страницы публикации не приведены.</li>
-<li>Заявленный качественный результат: предложенная двухэтапная схема должна обеспечивать высокую полноту обнаружения всплесков FCS как известных, так и неизвестных классов, что устраняет характерную для closed-set систем ошибку — отнесение неизвестных сигналов дронов к известным классам или к фоновому шуму.</li>
-<li>Ожидаемый эффект — обеспечение защиты воздушного пространства от новых типов вторжений БПЛА, которые закрытые системы мониторинга не распознают.</li>
-</ul>
-<h2>ВЫВОДЫ</h2>
-<p>Предложенная многоступенчатая схема последовательного уточнения (coarse-to-fine) для детектирования и классификации сигналов управления полётом множества дронов в условиях открытого набора классов направлена на устранение ключевого ограничения существующих RF-систем мониторинга — зависимости от гипотезы закрытого набора классов, из-за которой неизвестные сигналы ошибочно классифицируются как известные классы или фоновый шум. Сочетание генерации предложений без привязки к классу, слияния текстурных, геометрических и позиционных признаков с их уточнением через деформируемое внимание, моделирования связей между разобщёнными всплесками FCS глобальным само-вниманием и многоцелевой оптимизации призвано обеспечить высокую полноту обнаружения для известных и неизвестных FCS. Ограничение: доступен лишь фрагмент страницы публикации (аннотация и начало описания метода), поэтому данные, численные результаты и полный вывод работы не представлены — для их получения необходим полный текст статьи. Применимость работы — повышение безопасности воздушного пространства в контексте низковысотной экономики.</p>
+<div class="login-card" id="loginBox">
+  <div class="icon">🔒</div>
+  <h1>Детектирование и классификация множества беспилотных летательных аппаратов на основе радиочастотных сигналов в условиях открытого набора классов</h1>
+  <p>Доступ защищён паролем</p>
+  <form id="loginForm">
+    <input type="password" id="pw" placeholder="Введите пароль..." autofocus required autocomplete="current-password">
+    <button type="submit" id="btnSubmit">Войти</button>
+  </form>
+  <div class="error" id="errMsg"></div>
+  <div class="loading" id="loadMsg">Расшифровка данных...</div>
+</div>
+
+<script type="application/json" id="encData">
+{"salt": "TLG08bej+hgHkkDQZteg4g==", "iv": "HcksyFypHi63eupI", "ciphertext": "rqYQK1Lpm9UV4ZnOgwMM3iSbAMoCfU8pvYkltiY4oB3cOiND9kLS8JP5PPeeEyQtXlnXqpfOiiBVx2ur2tAQLdl7jS1FjYUMZENblyBBZdml6EVavNXC+3/+G/gCRZuq/afkNHWujsmCZBV59fPRqI3wRh0w9h0i60M2cJZ6UGcYeRmx/F0lBJW8gXGJPTE55Y35wgSqf8Q8EutpSEFTbehQn3F2XGZhRLv4O/nnEhk8qpdn342dout1igUMJD093iodGsRAA1IDIGZ59cej7X+foH2YP5R2lYB1RFQCqCO6E/65BchoDin45M4SLCOl0TWZfW7u9YpS8H7G6plj3NU+tLv/wgxfdeDbmIJX3QYc2gUPoaeLfsIY1P9Nv2NtX0D9vO32nxIRrVfsJd/1+IzpaSbpFyVf7ILwNEIkgBNQ1i8gNaW9BBfT8/kvFdNTVdpKmVdQO8lO372Exm/UXrzFylpoaH3l68y89uDY8AZy2f7d01Gyba2iGXJvqcv8fW4y+xJ9wvwJyvxftPnjITW+izDLVIODO3FglwggczGlryvjAniyDCKFI0EMUMwoXui4XGZquaOeINNpowTPbLqkcdcaqG9jn1KenrXDXDyhXb/ybK2NYkwBVQUZoRaXSSCcrrODIUoGCNNHtqEqqVjuYJjMTQB2/2FRz1O8kaJfwnmTbkRFBx9AEJYTGefIx13M5yLLYl98Ol8sWWGWQ6GSW0SPv6QNf21xNgXEI2TiI9PJ8fL649MXqvnNs2QQax9VZHpXeh3BMAMkJsv67ys4oHO0rijMtXL26MMxFRD3PjWjfId6cArbWqk5uZ1MoHKovywz48kI87uqKxzePtf7fbeumqy7wEjDMsHske2P6HQQ1/Cc2/Dgka64kQjyzFBeEl0tKDtOz61+SRkU23tmAcSaM3SavMonUIvWVq4LHcsM5ZSyiJDn63DLmDwtkE4uwSFzaxSnYtGLousqJh/Ed44hfNqmqNwEFqGJDpf0vp2hroAMOETxQrbAufrkSQfCO+oLgntWeRckUZolC6VTmI2KrB69gt4NyKTOdZrdd5iQONUW0l3dnca2FwP4DLU0j+bBeRWeIuLAw2PtOrwRTda1L6LUQcbEixFnZlM6M0JtNUdgSizODrCvrjirpPCnAj8MUa+Tj8Icowpd7tWcNHck6/S+124hyv0gotjH20XPKAotfXrXIBXvifnZ/ykJsATuGJYRC/NC8i9ROssRy32ukO1vsqlZ2MAAlByz3j418+jzAMc/gwqX0IF4l2yipjoLvI4XCYDuDLPzIvm/M14J3TaPCfWIN/hibnnlWnTHE74toOniYnNHK5kOTloDh1qyhrRu7E2WAfh9FiwFDEcJbNldX2kF/tL6V3yWa+N49jKdSKuvGxiD1oaNhtZdp9hkDHeNRVuElV/Fhql99YNdvNiiOvsJkvbNFY2nIhUe87GzROUVq0AHUk4Ab9tqbzc1pnryyHsa199w0XiBUmx5/9xuxZplcywPFo5kldneWMsf2s27GXFKMmBmo2Ujwhhh0kvXAunGq7ribxAgx7UyKVYfo54zaJ8ccbtXKuHxe5LJRahjFTarT6eeAQPZ23ICAt3XTSSPro4wpvHkuNZtlF0O2uoyUZFJ6uS9F+QRxv7gwG4lm77ilLTofYzp7kjJKV03HXp070kHkfLCH+wESllRd2vHeMn2V9M4s4tNL4Bxym/UabR+jnWhND6Op03CtaFEnXqxweSyG+o1uSQRShjo2zjm0pMGd1/YRGoHie1kdxFrww44u2Ck/SWGmryIRtq9RIMB5/k6K5ZHjYecJ1ye2C5ecIjNk5R+/jIt0fdSrGlF/8YPlLLBn/eh6/NQEm0nFlbXL6iU7hXU+WEDkFD6wchGU1J6g8Xej+jDuZG194CLwkHEzG6LjA0WLcQvhxVmIbpZpduqXpcQ5HUMZJgNy+flFahDyyJFqs1r5Hi6QDtgKtNNEkBXOC12SQegoDIb2aLBUEB9BoxygmTALFpIT/MXeApKSTxNoA1RQABTBrCiFCgRwS3tKXQQmD+FodgzXAdSbvRZeasbBr7uvwqb0AQlxnzLzU1t97QY5+ZDu7rN3PZBq7lESmAawmGCJrvvNrTsBqJea3wlci59Ft2kpcf4O/6dziDiqaKbi/XwwgTfXfs+scu9EqG8D8vnQ/kQdBWF1nSkg1FbE+Kgl+RzuIdtKdCst6+12VfOKwdi3R8JhPNj7cBGZbzNva9eMPGD6d2aETUj65gvtF2NsFV1mPszLWtEEY7SPca6a/5HlrlbUA6Uuh5ZPRd/hPxnU1nBgVUKLyMR7JTDpBve4THTmUNk73Ba5mo1iLc1HuD/xQVonZGKK/VPTI3kM/kLR9st3jEDu9Ww5rsjKsYAakcTpTU2oQjFHyZfKQqIlnFRBbKr8c7jpnpIS3quVD0SqhMtuHNmfieiMI6uIC0+xDhwBqHvornrkB2fXewW2yD8hquNZOpCPjk3O/u8vNUakukcvnrnfxHc3/KX+kS/vfj2xYoKLxHKMqDVNf44yw4PBeZ4AKV/yOH9W2y1VZJXupXS7YFCuR8lFK7Q+W4W5avD7zl1O2ZCTAe8aLTVkqv4oDfOp9VNs4LqbZbDYhZkFzhs1BIavvf1Ke2lAzB7CKBNxF7So2F99hnsCnOVR9Hc+iP2Ja3KHh/Ia+lK8XXP/gycTJ5bN1Jmz6kJw4NX16UJzLzbGmxvcbslenIYENb6v/pWFpmv46ZKC+TZdbEqE9+NakK9eEMLtiVtUDQ4FjpGzolWUDAKvbqDHDE/iWyAkDL2fi8nA8s1kAPBJ3RThtcFzY2N9aoSAkH0InVJYGiuM9fmB/6nkyKRdQaiOzm/D48zTdISKpp57yRC44/Ef3Pklvw3tZcUAbBynHc3RSW5Nipcbnhi7zlqVF6MCLaxsBRV95P1aXxRQS5f0Ph2aEGRnCZqZYmn9EtCyd3/RCLEeomUKvEhFj6Rm4/moKU1UKW8HtVL1foMYdsHsIE6uzg6ucTTPvBnH9BMz9RXQt9krCgko6xWuctwHpQz9g0Sh1UM+IOtY42g6epe5rrVm9wCnSWAp1OxV2X7J17huFPz2be/7KlJB3XoLi4Dpi/XChAUX6KGKZMxkPW5LvbVwMXzPfhnzQZlckfLR5u7kxQvR4j2Fb7UT5npHxB24IXDIWWyEjmrU9+MxKUFPKNI/WspyNbIz+Pp8yE0+zsa+cFLLAnfjp6Fo+mIz/n1IjgcoH33YQlFuIQbWIX6A1jzyd8RjAewYtLfuZkNMWuJxR3T0JHt1etXlN1S5QKMfFpu0rTXzrAZdVVe9qihG5Rk5BkQdjNV8TX9hDYLJzBuxIYOMzYEpdgVaYiN9ZVK8KG7B3pUvjc59MeOKJln/DlmPXEPuPbc5b3WyFadWuot2hCh5HTC+eOfQrAqOUSTVAhtpynnAmzZTiqAfvIe1h1yRosIItPM9jNQMU/ezovjiaGS/re3ibdG7+SfLHnfz6rfFg6HqdUdkyTmZocDMMFlOXFZEiEJu/uBT5EnZMthRilitnPVxZmko2fu1vUFdh9Tlbkv0kUpZNMNXwNCGe5DXr+5QwQ4gnVQQEZZ66TyRV3oWio1NKCzl/bnkT7ScTu/kKelizGrCvXsCejL7b7siEvP74M5UvifRPUIG2+c8CwdOx6zLJMHf2hFmlEqt1TQC1r+47vAO12U1tBiYJwHBhw3U25LExuYvVx4eRy8D9zaMJsP9d+NyOvi84UMdotoJA0ZJMeJ2Z49iCLrAn8TxIXthPkBTL77LRgDx7kdmt47AqvVsnxWW5vdq0E0wj2arWOU6wiDf/voGQSnPrxHOEqaefZtg9VJb+J3U41ka65EXntOl42ZeEodkXSeSL2uRTFNRg6z141ryoY0F3EjJRDThN+uBPbL5coYFCYrKCjtuuyd/WPzia9uSeAplx7ssPEto9TitOVOJ7MkoL8rcKlcBI1XIh5yCIHLK1BcEiVOLW2Zc0rWktAr20YD50oZAMCmL79iEzjD+QpbzGvqdHDZA6vgw0J10ysrX76yRW2x588iCgkUl7gUGAGg2y0nDFB3vNBMS9LgMB0bMBwVpl4oCJDiKNT671aA+8mMogJWqr5Tvgv6D8TodXx9SW6X+H6cMyqSGK5yKnrBXlhSAuIhnD/CCU/9Su0kGp6ggv3HSoYHMgY+hrMFn35ScEvR8/TBpnZhNWFh3VQY4HvWCk48G7Aq9/Rqy+PUFJSF2ZdisrzowxMIDFm3A7m5hFQ/8izOYEbBDkTvM75n5TmepjjJY/Me/yo3owjuTdisBUB6U3PRg0LiFfUEyJcrHVy2w3p+fZ6HfqffjKaILRohgs24BpprJckcCYk2wDrNhw8FNNpgYIFwux11oJtA03KJa04K4laiQrmriAGTyms3AiqOqI2nKzQ+V6Zuu4aykFIkdUiD1dmeBZJeHOP2ITaLXw1H7iYnL6GI+JjPeM89h7CeJmehxR1G3BQwWAlCJf4Xhn/sP7a4RKRScR+nz/8dB/Qs4GTs/zN8dU1Y7SbJ8curzXdfbvKK73FP7egfClMPlfWITE3A+OJo2RooCP12ZcOE8p7bFBzW5D5ES0XdZ/Ah/UWxPANL8QaNiNhgXg8lIUB55gkn2zEtV/9xpYB5OXF45xOgsPaGCa9h2qD6Zw3+6rDPzUcqzbyNEcrGpteaojwXh11dA+UztRI0So5KAHbfIc7e1UHk5g90pS8zWvXRK6Z6V7cHVYp7sii4UI2zOn1mCsPOqcqNOFjopISrkBVzW+EBpKLD+Jper1zKGaea4SSCJe/wt0CJRCUYVgusbo6HrDGNWXV05nX7z/1dxyPbZ0utzSL33b6ioyEpslswZO4tYGBg2Wr1wf60V04t4BlWhEhpgwcDrbDu9wKMOuQ66fkauVpysAEMdVVp/VwSygxhNz5M6s+db6kPDyUyW9RNGKFyDpetubt8CDzB7zIPNR8mDjmB0pTo/DbLxSzioSSiWq4ZezKMTqX/wd6NmNgwq10KLj/B+f7sg1l5+VDIbcH3H4qyx7egaV2VOA2h1X56wRvn8TFfNqhYj38bvaX3YcfaaXk9P8JAnncF4wA9v1Ebvhuwux1T4QWTGwpL6V5VXahgzuk9F6dtZw0UlaijPfuEqeZZeFzCYRcy0C1zOKoizi5WFJstDnetnRAmFKffIdsA++MKRRUKVqfm2ekdU424VTIL4CCjzCltdCHplCc6/oF7KXEvSxKVPjmcWDUUN8BUCQko04lGsAoyjgmE5z7ffqFPUixXA79jWVvsQ93cOjVpOfSB0Cbz/B6FEo5C5Mf6ZP/uzKx0uuKJhhqSgaDDFixaEnvBaLIBzQ1uHxBd/j7DXKWIVsGphf1dRmie1gMrd4vU+uKnirb9xe8SDWPIIu9RMeV3L+IGkGxsBnWsZgXsDC2gdYl4bvaODONdHuM/X6O4E+CRiTXQHaS9h1jgk3zrPvRxn2lCH4ke8qLr/U4+F+QB7a885cHGZ7kdql9lP6goqC4ioQeotdOdnsf2sQtt6GRnqNEy4UzAHdGzMFMD9wJ8QYH0pg+AbWfheOukLOD0TT4rqYgWW1HUMRv62cyzJCT7hU7turJvLMfIqY5UaEwrxInmnNDbOjhd1aOOUwZG43liqsJ4u+a22FI/BZzWN1/gRSEp/srPbb2voahjKT1W7vJDkqguvi0HPDYwBCnsD7ip61vNpvl1uGR6NyNO0bJYTdE0qYKNbS8eZXYPhXpefP93vZWYULNDaF+Psnf7wpgM2XcMizaqCvlKIoP3PfS7OAY6LpaUfOrMklqGFlDpIWq+rTWiU41k/zdwEZmP02jcWgfc87KpwLmm2AYW1vnFp2Po2v4pdHR01PCaikSHSNOnbDfDlqJsfXtdpRKyV1Pi+2SC8hwnu0w+jkvm5zFUntRzfmtnJmAGIK2xc7v4xatn7aGGj+JUjap7h10JIORY5kMNv5xHmkdTKM/oX1x9BpZcCH0r9VHXpsldtpRvab53d9Caea7ryy93CR+ffuGKF5nHDu6yk8vtNaUA3s7qAmp6L2L7MG4SzNPLNba4L2OuHKXXQqBYHAUFWkc5orpAdNZ1E3p9N/FX34J3Y8Ctao9SV+TiZOFO9k60rBdpwHzzTXJY5EiODm4A4w54s+nU5RaQqbCZ4szOWAB49BVzbre545lsIvEJEUwKicYgk/xlUS0A+ylbQ+3EfmNlKfMRybu9H3VRfOAWIxCrlr7YsRRzGgopohj6SO9E/uhCQc+dQy3oJ1wHEC8AFzTzGrgqUgZfijRZ+5bRGRMwnuMYrchIftSZM/kEbzbX8xsTFM1dRd6Z5YwR+oiqidEK88xSpU+ytCzafXBCrlIYAr4ZsPFa+o4mMbJfAFdGi0SsDm9holfPoSftxqZxy7QHh5W3us4zBGQaKZOE0SgEMoAFyMWYdpWc+kPdXC9WSL9AuqbQn1kjlxsrXeQrqx7fjTjShXnTAg43aRfazM3v9/5AGAeycSkO31BP69bVW+5Wv+njADxnrKpXgEXXQnZtUVdMDrrUYd0Kg4qyMeCjMd6S8tGgrBguKTvfv/rr7+plna/PSwjiJWP13Ay2sc+anAJU37rttQouOYkJs1Ci9RoZ2R/uUduORgS21eJ3Ck3wyuO5LiCxdvNzTVJl3oKknfNXC1Vyp/DJGb0leqFdLQ5pW/RiBgphiqfaYN7B+YgTxLYjcVgtzM5Cf+BB8AXYvbOypHzzjZId9yOHMo2Pi+AFacq5oQ3OlG67n+gX7NiYL3uQNVFu5UDt9jXdXQ0cfzPzyoy19wh4j9Mh/7jocxL0V+N/8OCoayhxHN+Ij1RbhIy+/hVx9VnZ9/fk+ZMJg49lXm2ssc7SF6b8E/7w+aEfw6mIXMMKdvtqz9VpBq7f5k6STmofZD1r4tX6tXosGRFNxkTyhIR7Oxc9crbuK1b7G1Eaq1mk/r/5porj43vTsgqPg/i37Pcq3FGU760eX1O7zMMDIcroehGD6aki75LO7fHLORVBjeKRAB9N8lO/W6Dp8+wSqixFjEk5rneSafjOHp3AZHOTwKw485b/9c9AWHFZQ64Vko9iHSSMfSsuNtRjrv/1Tg1qUcQvUoZ9Vxv5iXZ0PI6q/cu6gdOYHtZK5d9yEg4vBGLAQ7Qf9HI5xu6qXdgxCeZI6b8a2iUXsDkJA8QvmyOZldb4wBxeGpNjXJIRXRp4aeUEAHSaqSihXi9UrH3KS1JLNrrBgATsdPmbtKjr2lZ944uFSQUBWRQBjLEHqxggzC8vapVNQts2Nj5NZT62UaKR7k81PFA1XN6xAyKwAcy6JaDH/bWog1+tg3HRyiePNbMxLS0UBAfy6Oz+Hs+h8XHFSGS2ymqhXBdVuwzOMYiQtKcQ8M+IQArg19iCVw0q5AUYFsKVIPUKmvOnFvwOrC0qBqK3z7XTa4y4RQ8Rb/BK15CuP9xVP54o6ZCIdZ1HXaKr6s1sLnYkx2fUxTLXzbrGhtj7qW7pqOjKGxOrO146olshSmp3MGqe44UChrYqeWGv2fAByd7qDERhOKcbVTH1hcv8W6ymSl3cElcw6zQNk8wJpozQMN6kd14FLBGjugs/6PIq/XKUsz/Dq+LPOQ1o3dfiVAkjjBZwY02ybVZ6ic5kd0QTiYzv8aeXhloWeemhwEHKcpxgDKiI7UgyYj+BxyHLIwCHzhvlF1p6Sr22ysymEFv5ujKS+HV2BlJiarPdaXwbjsrMqoyhnrOUCCc0eV/d9cY8Lq5uHI7dxFVqztTejK4trNUwmpvqK/8DAuheA9PCoKlNb3HkUnaqIgMdWXZHXx7vAnK7XUH/GgOUtPepyn+k8tVZb6gFLVqNaiTWJMr+6qwM3tXe7efXYRK8GSgzvTFo6me/HU5dnZezDfZjLbtBL1fmFHGdDoAFy9gkJqgYUzHZ78/BBQX3db+XTOkgKOWHWNwnFOkFRxWP2A/AAtnk75lIf92o9Td90i60XQD29iEu0MQW08S2Q8GVFS3w0MOZkB2LBe/vjMd/ALZtW6bRGbZdH5uVVW0HSEGcGG1eCKS1CTS7gKFKg/6wmkbnskLSTwtFxzNRJ5mlnLNENoC8fSrmHkp2KIb8eB0U2Rfq7oKdsLTlkGuxGBT/bLRxegd0massMM62u21eoJfqU1In8vjE490WQAzxEiHFD49JLDqQq58g9zMbDNZJ52bdccpibFynQHWgWhoWfxDjWgyJ15w8zsw8jkPkckxuluAj7sc3+io7/+UdQWqur/e4OavDaEBN4dRpsNhI+PTGtDR0M0bjnZy9N6Y2acrVEd/ejv5D47i75Yghw91qSIBZCyyGSQYeN7nkkbuwM902sXtx11TSckHVmAyVqd4RgbdgCNCowrkyjMrfCpHoZx+rQlMDLQ2/8BhPVnYbL87PZx6ZC9BwGtMafMl6Bh1HOgF0NSmjgyfTAuBlQDIQ/JPH8D12w7E/r9ethQlH1zpBcldh1zOL8hSIKamAXua1gazGXz08mjaNnyuGsPd0B4suvg2dLFsKZ14LlZuasgUCDmbhzGi+TJF8ReMmNkbbD8XlAMYauwsPkIGZPMoljp6VmX10XMn0Je2EhOh8f8SwFMM6SeC4KvzuqpFxDn95GHC5REXtSx6jCTNJt5dM8/BktoMi+7NOvId+kmdLPz5VmNwNTCF/y3bXjEuBjmg44RamkNh5jnJo+XatR0yrglhtkhck522G67nHbeW7UFaVU60WWoJ03oDCgybg1Qh0tHi1kYdvb5GCTO69kcl21urrVe5dYTOWtI0TnWlhb2808bHpSMVwikqOSSUy5WmP8XxNeVwBRXR+kbUkeAez9UrCyw8w2s5qI9f7UG5febwWhQhrMFmS81uQYAAvH2EScZYAygx3ilgFIe+420NdRx/AfARzvxWjIAe2qvrZNXHUwrD8gDgDZHUZPtY4Ka3a9S+OfswNNedPyBxEa7oTvB6J/r1evQJjtDHandPVR8URECZ7GiOYkVNgOe5SqgIPZXcGIgU5sYq4ov5AiRjsP5fV7+6qfdK7ia3Utrb23AVRBNsDLAb6jeDKQcysU+pmJsV2g5IDILpkZihYw9/g8Xt0QppOG2DZCkAawz4HqHDIPjNSjzAplEpOHE71KG0jq9wq1zTygKeqpAc+qKV2l3mMP8Qudt9oo0FLkn95buSRxW93BKzSZfFC0jyjg8IdC75CoQDD4rhhlpSOVPCJSGSq4v8S041k2oTmLvegCr/1otlbrWMsK2RTCVxe/EggPJbUF40EwZTmwl1QMxM1eiuw52nsiBFK0XoZASNbD3HuTExXPHe3KHwsV/fQoz8vsEPzo/4YWtawbiZ0EW6BwbFW2gkF3f9l4WUMsebzhhrC4Z7HYiRKieDblVommykdN0Iy0GrkEiTeq/pXvt3I4phT8qa1HEF2BY3ZQFIgUllqVzso57jvBtVZn0//bMi1RChixT65uqfOUuTfook0EOTRfYFiY4K5hTzW8H9EQdfVc9FNGkdThLLWWnzgjvzZDli3pNsiDj72+LqccJJivyBj0ufY5mB29pCwwTgp0bU4dTkKfVBcwxNi4b+jZ8efiBfA5r7M0xd3XUJrLBaFvxc4FPQHg/OIfDmSfsdsvi0jnagLM0Bd4hP6dkL3ZyKoII92J9jtD4IQ4ijLyU47uo+GGGiFDQk8l5pUm78PE2+o1pWosrpX4Tid7pkWvNOgSym4x+hj2h/LmEmdNTIxsE/gw/xcMyBw58SvZZO4SO5KMynY+zwPUrDd6+2Xlx5CHaW9tMB9g/K7QC1Djs75fPdRHGEpBhbjZmfs5CG9cAZ0xcXQGaC2TdJrZS+Mj8OdM56/FYlit9fgubQl6SebG0N6Ur2a8aJAKN4629atoAn0m1o//rYod0sLsb0+swAdhCRUPBcLnmEA374wAeakS5O9Tm/P/z+c3G37vRdzC4FkGXnSnSa3U4OLaXWBYvx6umCCWytimQRV4c3mud3fna0QQLF/oAsXO4tkbzx3ZZm7kh2IiPTZ0PznH9nwboAQo9taRHAu1A27QrqLXt/zTiF2ApSIFO2VKMIa+PPZuGvkoidXnxBoCazG15K8yyZ1F/grNZGOWdM9LbnsS1VmKwMwSwqsLRHJgfEi0TpXCVJmxlFDIh2z1j6ID2nNDxOr9tn5CyoggMvjjwqicHypOAElukcga4WhEfCHsa+JthhzihqHqZnLXS94N+EkYnaKF6bbMLPOV8OVktPqMEzO1EcyHa4scXnvbHzkNsS1bJn6J4GyZ1V3CneiX5QbkWADSeO912d+xiotOQcPn2hlTCbuK8nuOZsbxLFRRe7fuu/yWUfeGFdQcnIzLq+wSXOUcbOAwwx+sjxg/e/CxaB+dEJ75e9tSkNWPW5oxK5cnUxa9Ha7qcR6RVFUh+Zxkb7ylDkzA0xIEQyB3nlrIy51EfPRxZYTVtU2slwJvfkaGblz7WGikNiZCnuod4NDBynljTrUd/q4FaAHHNLO/JWyTgkaujPHwjNdXPtkFAdnmfT86k6emTxZw/tJCtBW2FDfnaZnTbcctTnCTbAqA776v23oRm0zaUDyhoZP4gaUz80KeKwrcEQdRvnklna84vZUaYsBZqNwv0RF7eiHianaupmzW+nIkG2FKx09hMbj38a3gsmCty5pDT9K6TVx/V9k1sl1jhyXbJA3szbNWGNN2u24KgCOtU+SsNaDFxZP5ipHOMR9x3j/TwzB8yzvowdqjmMgBO3xBDBkRRBvl0SEqfPg8fbaBn8GiyAuMkOdIzKtNoUjEeO4i5NUnuNDnyA0eo3iSMl4gns7UmxcLfsZE23iOwgce0vpLJcH7sYaT2WBRrJxzFjqDotcAxb8IkBxp5cS5XnUIctFV5Fgfyp7eoxU2BkwLu/fsk0zwWbZ0HqWdG+psliZZprCfD9PY5dplCiXOW4PNsFhK8l76HW/78KnBkrGlebj3aSDsJQZjOki7IViiI1G1EAriG6cB6/ht9PrZnX6J6Gm1IwvbW2PJ/qqYU5bOLRxpgAyI5n6KujCFsDTGBdzkOrFk0xl4WjAHcbxfdAoO58cPdq5S/F9Sh+GV+stC1ecOcxp2PpY+u8Awz5UEOXHRJtlFwi1mBMiIzmJYkNEudyJ4+Vx1Ml/DNt2fX7aGJxcpiyazLWNhSRzIwcWgSnu4Sa++j9VwRMIqLs8Rfv7PREUZrWqNQ3q2LVWBslSmPA19wWPtvnQmCgidOY5BbYTQW/M/NkakJKmY0sk+pw5pa5KutqbwHjgu97ZbDM1duU1iR13sfTYdV+vH9NC9SccnY5GVmvVI/amQdDezEzUWJtX9fhMd6dUol/DzjPuPzBLLRB5jCTw8w7KNzgUxe1HZaQcC6n/iABHxgi00f+7aUm+4h50QFRvz0g3GkDCIcJ8+UKVSt/pyeKeKWbFfLrLULxHaJoIQhXGpYXXTbLMOWI3D5JRQGimVc5MThOaq/NkDwB9qxHaBcthCNxDZI7Sh4sp0NKplrd1iePmwvtKgtH5Ib+daMh5tF2i9GFnZtgB4th8Re5fkonaM4DiQnVjVgLYZXpdneEfSXPIBaJsdWvX/mDisvivLbkTwaQXMsTeGe/lIkIfDGc8QddAMWRFZksMaOiJcyDNN6IDeYXDvWADrTPKF+mZ7h/PyLo9d/UG90VlGn3mA3f0grRd5taoZyGKYZIUfrGP49amfp1fzGfuydxXR1fFgnzd2QPbKZYzk4GdWPud45j+NoSPK1nUNC+Z5FWrqpLWmRiHXe2vlcNUZqa3yJ7j5es/9uDwqR8SIEHsphve6XeMlAeU6pOK4tBTJFJprjZcMvgyaF/Bmp/tpwBaUtuHtOD9FHbByRwyy+EdytAraByUFZ4sqC+2GgrNdqayz2POuRRiV3ekL7BC6ZQ+tr42ezISYB57zdk9JRRGcj/eG8K5SSkKV8FiVpDntvCIh5xwtgvfxN+1t+uzW/2CV4tC56aS/u+Pid0GrpvdqwrLqzqWpagcAHNq/VuIYUtG9kVf1hKXtsBkyJ7EmRZcRwcuWUdMUhNJdw3ovIJWtQqS3y0rwc1krPYuvTRPSpfInqHIM+aLcUI+rGlioLI3emGPaGURxryJPhAK3K5qd6WRIkI7eqUwTX7vcLIn6OzbSVAPSGW1fVPBNfnqeA0Axv2PRrjr378hMQ36AP2pKN1qSSHwsvuLkmfdIPicdhe4Nv3Klnx/y6MvIPFgiVLMNFQRT1njyWoPqvfQMwmw/4s28afabq4pd7lxvuqNatmurIw749wGcRF3hR3zUNEGGbDTuPGi/sSCQb6KS2EqckRQBaRaUW64ZnGIoUG/P57LHnpsk5/BB8U6Tere155gjxthDi8bZZi7JDKTvnN3w3dKNnuNhpjQDzceXGoelTjJv5xut+oGxyTHYcKzYLEg5Fj/DtMAeSbFWnb0f/8VpUqeRAKOjAyH6qH7956yAc5U/9AGW0Ze3AlRkUf9Ldbx5kLyQhMaGQqNwvaRKqGIp3RS+k8nq2xx6Hr1ZbL7Gt0cgBf3vSD31YwaB1iayQdtOHRDGdwH2Z0yzmPUK3eqUyWOEINlXSc/UbfJ3DTo7TIy2AHDq3r6VrD3Hv16wLR4uYOvAzExL178CAt6wua6iPZ6DEQAWzEHagndcv02t88mE1AG4ju9iokT5HNvQXU4XY+emlVlSTv364K4hr2DGrj6YOYrKBsuANe4iKmL6WVSyP+oOTHA3JZD4k36nKRWWL2BhDcRVLfrkDIjfINdq4VHgmFu9c5cnMGpBf6e01V4qPrMeucEWPC3MEARfduugtOMP6FsY57pB0krzvr7nkc5EMwo8oGxTVLQ51BC8WDe2wRH85Mv+pvDHfUkFv2vhj3VD1q6dx0f49ZmW7MRyK2YTCUvryN5AYqqJ0z7H0HV5LPxuevSLRnhpsTfyD/BCXYt/cuc+xz7litMQkwnjXFHNomDIbZI2JG9cm9cLZ9AzvlmNqUxxe7FXTYoa0qcvbY+6P6UhzAN80/RmuE9h3qM0bcn8WwCQOo9WbV8X0K+4k+Ly1B5UOh/Wn//UTVL30mKHExWHtcI7sCib1iDUL+U22zk1yel9hYGsOCZ6xPWMdNVYe+v+l5pGRxjZprG+xbjjbtibRvobKu5WVI48yYjSWCcYU4cfY6er7Q8QI46LtuL5xaL99kINkTnZZki7WuaGVNytD7TY6T1C5YSa+sApZ8scnoM0px/XMPQPCf+iVMxeguQ9jLi6Uu8GbcQBAenL9o3rwZ9IsFwvY5M8w+ZIqiLdSb758fs1o0TbXoZYcZi2oOvkfR+vVkhHniA3QIbfCJ90RvytaRWfqJvLNErHnN9Yd5Fo6bPvIkYQOkpw59BmLxvcJSr1kNzFLfY6XA9DSXyHya0BiDmsUyzQm6mxRqYDA1UIAKrXNurzpQQbjXTJ8KRKhE5JlRIRmzpCGXkraZoaE+rdL6czwUjuULyn2Na9dHgRouAzDIQY/ou52op/v2Bq8BgO6n9pIlW9J80Firmq8kenuKBKcxBeEDiohT1J4g767zwJavvUlj68IiuX4RBN0dBL1o/jTxKirSwjGnqh2nVgpZ3caOiUVDKdZFvV8l0bHxnTmd2QHcHF+m3cRYgRenMdzKaQhs2/Og47mQOGEkBqYIxfJJ28GEY8pomZ4Nrn0maVsAQViExYIg6Km88l73X6ucylqdxC8SnJhutYvt3rXSiMHqgBjiXYMeQAwZdXZPE8st6cx/K/pUs9Dt2NJyTkGSX0RWvW4kqqCMAawq98gIp1xT3bZs1Vkwvu/MWVpKY1KJJW1j3MdOgSb7LceLRFcnQOqv/6hOqxeVQzuS0SPQtFjO5FPSKBv6lpgCzo5NTjSV7hfqddLH7xzcNDR3wbW2zuoMyPZS9ZjlXsv+3Z83AgVVU1v9Yrj5oG1gTIFPLZuN35W0VJlk0uWdYTwlVtRgNBoeSA9+VzYwPA+lMenn1iJfe41Ai27QAqIyKJlXphWU4js/yAhy+aHVkIOWHK1Biba7yOuu6VnbVHml0g6XjlNt6PQfTb++t7SzPthxrj4YKKjTfU/fsO9x4msJZpHZ/+TzwNw4/QdRrqptM0O2h4qaQUQxtPmqKSJWHJmRMv2YLSA0U5+aZIUCy1+v0VqSCMdyYxuZOVar/kamZOmS47GBtW2f4c+Ep1zuYe2pEFnlfFPCCyXLsbtYSWg7VUB5jKxyk7RX/SgXNoVCNUYtiTCh2wHCW0BJV9fyR/keAiOr9bUgB6tFtpGfgen20Fe90L52T8Kcv66buDcl2wbwCc04FnLirytzvyE0xscaAQGdYj88mg5CIfQylLUW5DI3MBd2wDyFJWx1XHcBLoQAs1IbYfJp6PZK1TEM/j8gIhhj5vnrB/uXYRj5fMBd7j4+xjKFShn9m4XyyBqw06ylf2BfxXpTMs0fkl8R5w/N4sTL6JaBJQZraK+ALhnVFeJ3me6iIdNgRQ5e8lemsvMdl1t94UfBeA8LjBhV8OgD788yD87M8TuXVjBAErq4YDvUrxrkeMorGm0IUYuhIOxUvAdRa0r3T8f/iWnM7ba6wSV+ivQHraVT+H0OnSxtovQyYPwRiT3PHtRqs/sWXoxruBxWgrMtsmZoSyt5gWJVwioH/wufwoPPzfoGolfmsnZFqaq4b83tDFyOVNNrtB+ADMdJOrY07A41XvAqc5RbV/BjFHSgBrqi5oeNt86OxEkDeryX8WKVCp9Ps9nOvT4F5ieh4qwXEiR+HdtqHmWHrvYa01ib/AVt15vxma6rKpRkGbAusjID0s6q6w9ob71QCsWo9s43dUcrI2/l7BQTLSP9aOrJ5WcTCG2HsWaiai6TpIlKhY5D4rrYlOuIWO+/9zUgSQCx3prqnUKf2GOH0EahKhPgvy0tOHQnGod7dthOjI5AJ/xZNJVL41LeeHcDt4dxAeFvgJNFltOOOaNpuHcOu9T3PMdWCPDSlExFyZrMIwNNzlOj1D3W1GLZZbm8pzyzwyat9vEuIFAHxRmu6ZWOBFzOELaxF/vmhf/Fi+YCUKIAx+Dgb9Dw4AIY+z4SfAsGADy663S6OYMdvrwzgHl6XUibzingXKCUtdHZi2wdg3Wxsf4E/6ak44b52BkYoECl09xUS8MRkZnfwxCSKxH6OanebfIT97ReZvookuZgteczkKrmWyt0gSb84XZiPtFL6kPEQ5GQTNz6k8zCQYYhkajSF7k1W9mZ8teeimKYCAAlBI9D+cY26jSEDTIf1ZJk0JVMhWYevT0hn5NgyXXpHjmQvmi1zSNGXMhV7T3tJWXbmkRW9WvdA3td+Aeniv0xPk4nJZht/JPcc2REhAwm22B/W3XqAw80k+YzX41lpOJxQXuqYEYCHuiQFi7jWqVoQ+XgwUu/x4ApKuga7l0iO97ux87bgT/9nE8CvLpFd4rNi6FrSPcDdwsWOsbUtBXh3hzhns5Tt9rm+hs3LSeu/Xab9NSVa2ABvFRzA15XvNU2mLjk58lBaNjbzvVgcv5/7042FbmLdNtnnnbPoKMz+g+1onizThsSdT3wO/Hoe7DlPUkgFXvxUB+cxQeZrzBFLSZVI8JjJYAy7FOV7KtcAdWjw4r4+v5LqIBJmBGqGEp5rhr/eiNrTSJH4NRYSB++zulVSlj7ApPYv7zCZPLLK9ovr8TKMP94Ef/HlbzYY9My8l6IaPMccFL2ThQGbi+NdRVFzbzrWGppOPF7/ii2n44E1wPx/m+xRqxQCHmBfaMP2TuzxBFgtX3yyEA22xZCC0iVAp+A/D+gIm4s9jaXPwSs5vCswUgUuQQ9PeP5LtI/9RdUlsi3OTVRfC7LsW6UjUi4KX+6lbLMhri8kcY/vD1KfdQ7zebB69yqm3Z4popZKFLE8cIaaJgWVHw2ZnSMQwUyijyzqeiPA5He+vjiQOLM4ncVICOodSHUaK1sKvE6f+WacFRUnKL4Vn+dhqw+J4R/kci1DNS/bAJF+x6LT3+fvP3YHcibDWi1w8G+7Cj4KOmJ+Oj5PTkQSDJ6Nrqee8JsmDPelNdfpaRw1Ji/+qO6hoIREl73uyv9IDFDdd3xhxkoVeOp/k2+W6fcqNd40N7fixIV+EHkcL8pu8besFzYTcxVUI7+jOw11SQrZ7G1KRDsYwkDGtzd1ei1DhBh49g+7C6brG26yXLTI3EdwzuFIyQpCZSO4+ecdl3d1LhfvLNax53Z/yK0XpaFb1EpwE4Jb2HsdweoaxQlL2QWDjmFFF9QhZwLPJlPoLrQW3sQR8WyRva8KwaGtkZCnV0/L8lT8UgiTexgE+BPt+poFBp5XPLxdnErbNajZtg4xqTnoFGHfytyYND9v0iYl1QvgYDw2GO4ixBTzrOdoodMbwy9C9/ED9Ro5q6OaUYKWOfSCW4zVRGQv+kHR3OUFottCh82GTApWIBWms3SOdH4mPfCEwW87DwR7ycPu/6aTPm3UabqzkomuX+td4wET6ugR2vf2Ly9pQkZfPpW6mNNraZNXLzE/DSN1TC3IhbyObFmSQ3dZUEdcXBKpWsHs1QfejEAZDHn5G3S3IqoTuNi875jEIKQhHZQ9fgxALs+fD2R1/cClS3cKMT4I0XX2U4+lq9fuyeYfXg8ZUzx5Zo112WP3DmPpBOtNcq7MzxtLWJxCjxyaqZe32yB+9AFC3HJSTe+FfGWklXYjg1Q4b86yk2cVAj/PExmzdH3A+88cYtfRJEnOPLhEiCeFaccfB9hxSXJcbAiq/I/EJ9p32TEiu3xxSBNrNfWmOsSIT2AvjKiCxvWSGKOTAS5csZn6Hj0taVbWL2M/Y/mq9uitWJLEH/rO8+1ktivF9ZJK50ym81d9VVsR5uOasyxdSAtix+gNqH/jQVRWauJQg378F+eUcPBtN8/fwWS2e1aCvmJ/AXT/RMW5g5glEEl4RN0I2gBCeOwTzUPhd7c6c/+sef8U/Wfr5otXrIWoOxObSp697ZRGkCtMV1YvxEqH0pV2Oxx+sFBpDgyWkkPfD24MrMJHNvYXLo0q4t9tLOtnSATWN4dkmmOjJjdlOvxPN2MbORPVRegUCneuXNQ/w8zmaeq7xtqfFuyGMJ1LApHJnLxCEuRl7WdOgseQvNXiptxsF4FisX8fHhTGGIj4Zknv6SN2I/r4puY5pvw2UUKjaSjbpt9B0UutelhRPTgGO50fKSvpo2bTrrd3brxd9Nsqqix/E5XwMyEOnmZhteDWkRnQGFVuOGdgxwr1cZo7nSQLqzMOJdVW+37p6O0Hl/IrvhXS/PwOxJPxcm7WfoYGcp0cSwn+OnF59j342oGZ9eDRHKFhyS86Nd8tn2+hUZn7KqaGZDHCT0/rJlTNmF6FMyQGc75Z2rErksk9gy7y+thEUFRqWyhlk+1oqiNi1TZOAKQxaX89TAmBe38AG668lYeLLIFj086A4LAkNZKai9gH+hEKO6HSU0z7McU+pws+et3F/snITQgVyLFy7W6kMEJv6MiA1DlHUgo9kvR1D0h7xakkJZ2AJyFrbbdBRhGIZ4iCjr7eXMyl8xht5B34t657OTKf4q0KW+hcBnwEzhf84PLmsJXh+ZSbK7W9jup/9lOfEsuQWmW5vvyWzn3DwbdYRoLoYGD31dapwZK6MJ/cyqXqEP55JBU07to/pgJife9HVcRVHRzstkvIDgfNTCbKpo9AUXBDS7z+p4UM+Ia0SDcPM3BdvkVW/DrDPkzHpKQTkpBvVsXrhWD+JOELy/UXdbAo5EK1b6zQBZNxYAOsg7bFHDlYUmM2ka/4Lb9qi/x7WC42rs4bDvONBE1fHocfeaBOoE0ImRXOK5iUPO51SjI/LRpMDXw1arKLQ3m352njxFfdk1xVaaNQ1h5AFmnyC512sJ557ZXcBZyOqw15CbKOHB8H5zVi43ww3EfO2L5Z7GzZsoAejsnaJdVFVWvTgOPMT6K5jpzgv1q69JHKxD8lhSs+RfwQ9+OCWdw4JlHJGWdDT2zjeg16bikEzX+OR2/X1aR96Ef+FIChN88gxYd+HyWlSuNbRzx7uoLbIbEeXZsLOztuUQxkPl6ebFQyTNXN2O5vWHZJYzXvO2zmLEzYM1OG/m67rN0d24APXR4BvJTA80/b7RqbsNSBmNDO488eoO47m3+Yfvk4OlZaud0MpLEVJytw5G5XPaGTrhRp7d8Ta2dWayBWuau7RwF7W0AOyoldUPFSnbo4Tsvw6IF5lNdTyeAusm+AKDF66GL635r1MIGEHlqRnyEwgTN8YbEH8uckok4q57RNM9WhjRUbqfF2YMrAqgxpwtVrRimrgHkovWXevVp4l8mZzHljZNvupMpGbDswR25RlbLmF000H5hSLF5lmaWZLxP9wryjMi7t0XxC1jxirrdDiBAjcbMZmgTBnrIG62OfRewd4yVdfhB5sx+G+U0HnzKjCkHy7i/kR/LVfm4dQ/qf1iohkAFyCgyrupjHw/fRLWKiKkz00zZlNZvoRWPIOQSGftq1iJLl6wsNVfd3bpx1oaEvq991qAQSb3UpnUEBsXUFQEJ0bdcISxEHf8nI6vE/XA0kyMVbE/y/e3+dHxduGh3yCyflq0vWAI8wrl0PyJavkYBNORZN4nKifTgnoma4hAaG0XZ2UNGprGQNIAlMiW10wJ0cq+GX7hT+VrSFCNyjZMMyfxOLL1UEdaER14LiXRPQCI9Q4811adsOs9YA0ka6QzjZWpRd+oP3wnenkobo0TQ2QYESvqikvEAgRoXolQBBk6Yx/ua4FizZqMPjjfgKCkKTSXwdv4Ho9fXDtyDkigKzfwBIokBhk6FttFqthpKSrEgHWghVpp6p5m6QzSCZuiBmiCBGkHNIxs7EuAysGRABzk6K6nigcPRelVI8IkZDWbJKVSihK50xmdvK5O3XrHoZRpUvRLqoFJLmxjNACOe0WkceD70cNfB/k3gKLFtFz0Zg1ew7NI2UHudEiHL3PdGqBB23rfAulFoUb1hEvcwPWXKshzAGIlBq3jKBeUewj2CHq2bFgSCRAGgQI8Elh9Y8IRNp8xVVmnhW4fqsVJaE231y9qMPu2c0F0NXZW3QYHK2Z6jmzxFoMzLD0/B9bWprYEYvvVQUfGHJ77lUifTne1xY0KZLh7MbK4EoYrihJH3ONXRnrAZcC0buAWS0iJNWJasUuAOXSQYa0qIgPJg/QZUBdfXpgnvdk6xTrl3ETr5zlAxfeGkqkMe8fK8YOrRq59O43nCotl/ALbMTNBun/YFSqt576rfyn4IFz/0lFGtZFs+9lWkweDzaCajX/Ka1U8k6h06TWx0Ow7l2JmnfAyUUJoJ8m1EGIqo="}
+</script>
+
+<script>
+(function() {
+  const encElem = document.getElementById("encData");
+  const form = document.getElementById("loginForm");
+  const pwInput = document.getElementById("pw");
+  const errMsg = document.getElementById("errMsg");
+  const loadMsg = document.getElementById("loadMsg");
+  const loginBox = document.getElementById("loginBox");
+  const btnSubmit = document.getElementById("btnSubmit");
+
+  const payload = JSON.parse(encElem.textContent);
+
+  async function decryptContent(password) {
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(password),
+      { name: "PBKDF2" },
+      false,
+      ["deriveKey"]
+    );
+    const saltBytes = Uint8Array.from(atob(payload.salt), c => c.charCodeAt(0));
+    const ivBytes = Uint8Array.from(atob(payload.iv), c => c.charCodeAt(0));
+    const ctBytes = Uint8Array.from(atob(payload.ciphertext), c => c.charCodeAt(0));
+
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: saltBytes,
+        iterations: 100000,
+        hash: "SHA-256"
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: ivBytes },
+      key,
+      ctBytes
+    );
+    return dec.decode(decrypted);
+  }
+
+  function applyHtml(htmlText) {
+    document.open();
+    document.write(htmlText);
+    document.close();
+  }
+
+  async function tryPassword(pw) {
+    errMsg.textContent = "";
+    loadMsg.style.display = "block";
+    btnSubmit.disabled = true;
+    try {
+      const htmlText = await decryptContent(pw);
+      sessionStorage.setItem("sdr_news_pw", pw);
+      applyHtml(htmlText);
+    } catch (e) {
+      loadMsg.style.display = "none";
+      btnSubmit.disabled = false;
+      errMsg.textContent = "Неверный пароль";
+      pwInput.value = "";
+      pwInput.focus();
+    }
+  }
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    const pw = pwInput.value.trim();
+    if (pw) {
+      tryPassword(pw);
+    }
+  });
+
+  const saved = sessionStorage.getItem("sdr_news_pw");
+  if (saved) {
+    loginBox.style.opacity = "0.2";
+    loadMsg.style.display = "block";
+    tryPassword(saved).catch(() => {
+      loginBox.style.opacity = "1";
+      loadMsg.style.display = "none";
+      sessionStorage.removeItem("sdr_news_pw");
+    });
+  }
+})();
+</script>
 </body>
 </html>
