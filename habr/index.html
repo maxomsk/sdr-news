@@ -434,15 +434,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 │    движков ускорения под Edge-процессоры и NPU.                        │
 └────────────────────────────────────────────────────────────────────────┘</code></pre>
 </div>
-<p>В то же время в области <strong>Computer Vision (CV)</strong> индустрия за последние 10 лет вложила миллиарды долларов в оптимизацию архитектур детекции (семейство YOLO, RT-DETR). Они:</p>
-<div class="table-container"><table>
-<thead><tr><th>- Инвариантны к малым сдвигам фазы (спектрограмма отображает модуль мощности $</th><th>X(f)</th><th>^2$, отбрасывая фазовый шум);</th></tr></thead><tbody>
-</tbody></table></div>
+<h3>«А почему не классический CFAR без нейросетей?»</h3>
+<p>Закономерный вопрос радиоинженера: <em>зачем огород с нейросетями, если есть классический двухпороговый CFAR (Constant False Alarm Rate)?</em></p>
+<p>Ответ кроется в <strong>совмещении детекции и селективности</strong>:</p>
 <ul>
-<li>Естественным образом агрегируют информацию по времени (ось X) и частоте (ось Y);</li>
-<li>Аппаратно ускоряются «из коробки» на любом «железе»: от Raspberry Pi и Orange Pi с NPU (RKNN) до серверных GPU (TensorRT, OpenVINO, ONNX Runtime).</li>
+<li>Классический CFAR отлично находит <em>факт наличия энергии выше локального шума</em>. Но CFAR не отличает пакет управления дрона от всплеска служебной преамбулы Wi-Fi или короткого пакета Bluetooth, если они попали в один и тот же частотный интервал.</li>
+<li>Если навешивать после CFAR ручные эвристики (проверка длительности, подсчет межкадровых интервалов, гистограммы скачков), код превращается в хрупкое нагромождение «магических констант», которое ломается при смене прошивки дрона (например, переход ExpressLRS с 150 Гц на 500 Гц).</li>
+<li><strong>Сверточная модель (YOLO)</strong> одновременно решает две задачи: локализует bounding box по времени/частоте и извлекает высокоуровневые визуально-спектральные текстуры модуляции, отсеивая бытовой радиомусор.</li>
 </ul>
-<p>Поэтому оптимальный инженерный мост между радиотехникой и искусственным интеллектом — <strong>оконное преобразование Фурье (STFT)</strong> с последующим анализом логарифмической спектрограммы алгоритмами компьютерного зрения:</p>
 <div class="code-wrap">
   <div class="code-header">
     <span class="code-lang">text</span>
@@ -452,7 +451,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
        ──&gt; [Поток отсчетов I/Q: 10–40 MSPS]
        ──&gt; [Оконная весовая фильтрация: Дольф-Чебышев]
        ──&gt; [БПФ / STFT: матрица N_freq x N_time]
-       ──&gt; [Логарифмирование (дБ), нормализация и Colormap (BGR)]
+       ──&gt; [Логарифмирование (дБ), адаптивная нормализация и Colormap (BGR)]
        ──&gt; [Инференс YOLO11: тензор 640x640x3]
        ──&gt; [Bounding Boxes: Время t1..t2, Частота f_min..f_max, RSSI, Класс]</code></pre>
 </div>
@@ -473,13 +472,16 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 Слабый дрон (-85 дБм)    ───►  ПОЛНОСТЬЮ ПОГРЕБЕН ПОД «ЮБКОЙ» БОКОВЫХ ЛЕПЕСТКОВ</code></pre>
 </div>
 <p>Если соседний роутер излучает на уровне $-30\text{ дБм}$, его боковые лепестки при прямоугольном окне поднимут шумовую полку до $-45\dots -50\text{ дБм}$, и сигнал БПЛА с уровнем $-85\text{ дБм}$ просто исчезнет в шуме.</p>
-<h3>Выбор весового окна</h3>
+<h3>Выбор весового окна и динамический диапазон</h3>
 <p>Для радиомониторинга критично иметь подавление боковых лепестков минимум на <strong>$70\dots 80\text{ дБ}$</strong>:</p>
 <ul>
 <li><strong>Окно Ханна (Hann):</strong> подавление боковых лепестков $-31.5\text{ дБ}$ (недостаточно при сильных перепадах);</li>
 <li><strong>Окно Блэкмана-Харриса (Blackman-Harris 4-term):</strong> подавление $-92\text{ дБ}$, но слегка расширяет главный лепесток;</li>
 <li><strong>Окно Дольфа-Чебышева (Dolph-Chebyshev):</strong> математически оптимальное окно, обеспечивающее минимально возможную ширину главного лепестка при строго заданном фиксированном уровне ослабления боковых лепестков (мы задаем $-80\text{ дБ}$).</li>
 </ul>
+<h3>Адаптивная нормализация (проблема скачков входной мощности)</h3>
+<p>Если нормализовать спектрограмму «в лоб» через абсолютный максимум кадра (<code>p_max = np.max(power_db)</code>), то при появлении близкого мощного передатчика вся остальная спектрограмма упадет в глубокий черный цвет, скрыв слабые цели.</p>
+<p>В практическом пайплайне мы оцениваем медианную шумовую полку эфира по квантилю ($Q_{0.2}$ или $Q_{0.3}$) и отсчитываем динамический диапазон (например, 70–80 дБ) вверх от шумового порога, фиксируя контрастность радиосигналов независимо от резких скачков входной мощности.</p>
 <h3>Ориентация осей частоты и времени</h3>
 <p>При формировании картинки для нейросети крайне важно согласовать оси координат матрицы STFT и экранных координат OpenCV/PIL:</p>
 <ol>
@@ -539,10 +541,10 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
     <span class="c1"># Добавляем epsilon 1e-12 во избежание log10(0)</span>
     <span class="n">power_db</span> <span class="o">=</span> <span class="mf">20.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">zxx</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-12</span><span class="p">)</span>
     
-    <span class="c1"># 5. Динамическая нормализация: отсекаем пики шума и нормируем в [0..255]</span>
-    <span class="n">p_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">power_db</span><span class="p">)</span>
-    <span class="n">p_min</span> <span class="o">=</span> <span class="n">p_max</span> <span class="o">-</span> <span class="n">dynamic_range_db</span>
-    <span class="n">norm_spec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">power_db</span> <span class="o">-</span> <span class="n">p_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">dynamic_range_db</span> <span class="o">*</span> <span class="mf">255.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="c1"># 5. Адаптивная нормализация: привязка к квантилю шума эфира</span>
+    <span class="n">noise_floor</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">power_db</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span>
+    <span class="n">p_max</span> <span class="o">=</span> <span class="n">noise_floor</span> <span class="o">+</span> <span class="n">dynamic_range_db</span>
+    <span class="n">norm_spec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">power_db</span> <span class="o">-</span> <span class="n">noise_floor</span><span class="p">)</span> <span class="o">/</span> <span class="n">dynamic_range_db</span> <span class="o">*</span> <span class="mf">255.0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
     
     <span class="c1"># 6. ВАЖНО: Разворот матрицы по вертикали.</span>
     <span class="c1"># В STFT строка 0 - f_min, а на экране y=0 - верх (f_max).</span>
@@ -599,9 +601,12 @@ Y=640 (f_min, нижняя граница полосы)</code></pre>
 <p>Один из частых вопросов радиоинженеров: в открытых радиодатасетах (например, <strong>DroneRF</strong>) хранятся сырые отсчеты I/Q, но нет рамок детекции в формате YOLO <code>class x_center y_center w h</code>. Размечать вручную 10 000 кадров в аннотаторах типа LabelImg — колоссальный труд.</p>
 <p>Мы автоматизировали разметку с помощью двухэтапного гибридного алгоритма:</p>
 <ol>
-<li><strong>2D CA-CFAR (Cell-Averaging Constant False Alarm Rate):</strong> адаптивный порог рассчитывается по локальному окну спектрограммы, выделяя участки, где мощность превышает локальный уровень шума на заданный SNR (например, $+12\text{ дБ}$).</li>
+<li><strong>2D CA-CFAR (Cell-Averaging Constant False Alarm Rate):</strong> адаптивный порог рассчитывается по локальному скользящему окну спектрограммы, выделяя участки, где мощность превышает локальный уровень шума на заданный SNR (например, $+12\text{ дБ}$).</li>
 <li><strong>Морфологическое замыкание и Connected Components:</strong> на бинарной маске радиовсплесков объединяются соседние пиксели пакета. Полученные контуры фильтруются по априорным физическим ограничениям протокола (длительность импульса от 5 до 50 мс, полоса от 800 кГц до 30 МГц), после чего формируются Bounding Boxes. Ручной валидации подвергается лишь пограничная выборка (около 5%).</li>
 </ol>
+<h3>Борьба с переобучением: честная валидация (Group Split)</h3>
+<p>Критическая ошибка многих ML-исследований в радиомониторинге — случайное перемешивание кадров (<code>train_test_split</code>) из непрерывных сессий записи. В этом случае соседние кадры с шагом в 100 мс попадают и в обучение, и в тест, модель «запоминает» фоновый шум конкретного приемника, и на реальном выезде в поле точность обваливается.</p>
+<p>Мы делили выборку <strong>строго по сессиям и дням записи (Group-K-Fold)</strong>: тестовая выборка содержала записи, сделанные в другие дни, на других SDR-приемниках и в других географических локациях с иной электромагнитной обстановкой.</p>
 <h3>Специфика радиочастотных аугментаций</h3>
 <p>При аугментации спектрограмм <strong>нельзя слепо применять стандартный набор Albumentations / Torchvision</strong>:</p>
 <div class="table-container"><table>
@@ -731,6 +736,27 @@ Y=640 (f_min, нижняя граница полосы)</code></pre>
                           <span class="sa">f</span><span class="s2">&quot;(Полоса: </span><span class="si">{</span><span class="n">bw_khz</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> кГц) | Длительность: </span><span class="si">{</span><span class="n">det_info</span><span class="p">[</span><span class="s1">&#39;duration_ms&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> мс&quot;</span><span class="p">)</span>
                     
         <span class="k">return</span> <span class="n">detections</span></code></pre>
+</div>
+<h3>Как подключить реальный SDR или прочитать тестовый файл</h3>
+<p>Чтобы протестировать пайплайн прямо сейчас, достаточно прочитать сырые комплексные отсчеты из бинарного файла или забрать поток с приемника:</p>
+<div class="code-wrap">
+  <div class="code-header">
+    <span class="code-lang">python</span>
+    <button class="copy-btn" onclick="copyCode(this)">Скопировать</button>
+  </div>
+  <pre><code><span class="c1"># Вариант 1: Чтение тестового файла сырых отсчетов (DroneRF / SDR#)</span>
+<span class="k">def</span> <span class="nf">read_iq_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2_000_000</span><span class="p">):</span>
+    <span class="c1"># complex64 = 2x float32 (I и Q по 4 байта)</span>
+    <span class="n">raw_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span> <span class="o">-</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">raw_data</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">]</span>
+
+<span class="c1"># Вариант 2: Захват в реальном времени через HackRF / RTL-SDR (pyrtlsdr)</span>
+<span class="c1"># from rtlsdr import RtlSdr</span>
+<span class="c1"># sdr = RtlSdr()</span>
+<span class="c1"># sdr.sample_rate = 2.4e6</span>
+<span class="c1"># sdr.center_freq = 2440e6</span>
+<span class="c1"># iq_chunk = sdr.read_samples(240_000) # 100 мс отсчетов</span></code></pre>
 </div>
 <hr>
 <h2>6. Подводные камни и «грабли» реального эфира</h2>
